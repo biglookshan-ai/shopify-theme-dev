@@ -284,7 +284,7 @@ function App() {
 
       {isMobile && showMobileSidebar && <div className="mobile-overlay" onClick={() => setShowMobileSidebar(false)} />}
 
-      <PanelGroup direction="horizontal" autoSaveId="cinecraft-layout" className="main-panel-group">
+      <PanelGroup direction="horizontal" autoSaveId="cinecraft-layout-v2" className="main-panel-group">
         <Panel defaultSize={30} minSize={15} maxSize={50} className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
           <aside className="sidebar">
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
