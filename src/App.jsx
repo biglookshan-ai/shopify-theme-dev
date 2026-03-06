@@ -4,14 +4,7 @@ import { generateDescription } from './lib/gemini';
 import { db } from './lib/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc, query, orderBy } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
-import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import './index.css';
-
-const ResizeHandle = () => (
-  <PanelResizeHandle className="resize-handle desktop-only">
-    <div className="resize-handle-bar" />
-  </PanelResizeHandle>
-);
 
 function App() {
   const [apiKey, setApiKey] = useState('');
@@ -284,8 +277,8 @@ function App() {
 
       {isMobile && showMobileSidebar && <div className="mobile-overlay" onClick={() => setShowMobileSidebar(false)} />}
 
-      <PanelGroup direction="horizontal" autoSaveId="cinecraft-layout-v2" className="main-panel-group">
-        <Panel defaultSize={30} minSize={15} maxSize={50} className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
+      <div className="main-panel-group">
+        <div className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
           <aside className="sidebar">
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
               <div style={{
@@ -415,9 +408,8 @@ function App() {
               )}
             </div>
           </aside>
-        </Panel>
-        <ResizeHandle />
-        <Panel defaultSize={70} minSize={50} className="content-panel">
+        </div>
+        <div className="content-panel">
           <main className="main-content">
             <header className="desktop-only" style={{
               display: 'flex',
@@ -449,8 +441,8 @@ function App() {
               </button>
             </header>
 
-            <PanelGroup direction="horizontal" className="nested-panel-group">
-              <Panel defaultSize={45} minSize={25} className="input-panel-wrapper">
+            <div className="nested-panel-group">
+              <div className="input-panel-wrapper">
                 {/* Left Column - Input */}
                 <div className="inner-scroll-col" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingRight: '16px' }}>
                   <div>
@@ -597,9 +589,8 @@ function App() {
                     <style>{'@keyframes spin { 100% { transform: rotate(360deg); } }'}</style>
                   </button>
                 </div>
-              </Panel>
-              <ResizeHandle />
-              <Panel defaultSize={55} minSize={30} className="output-panel-wrapper">
+              </div>
+              <div className="output-panel-wrapper">
                 {/* Right Column - Output */}
                 <div className="inner-scroll-col" style={{ display: 'flex', flexDirection: 'column', paddingLeft: '16px' }}>
                   <div className="glass-panel" style={{
@@ -692,11 +683,11 @@ function App() {
                     )}
                   </div>
                 </div>
-              </Panel>
-            </PanelGroup>
+              </div>
+            </div>
           </main>
-        </Panel>
-      </PanelGroup>
+        </div>
+      </div>
 
       {/* Settings Modal */}
       {
