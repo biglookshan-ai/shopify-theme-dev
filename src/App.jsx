@@ -671,6 +671,13 @@ function App() {
                           </ul>
                         </div>
 
+                        {/* AI DISCLAIMER */}
+                        <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px dashed rgba(255,255,255,0.1)' }}>
+                          <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                            *This text is summarised by AI
+                          </p>
+                        </div>
+
                       </div>
                     ) : (
                       <div style={{
