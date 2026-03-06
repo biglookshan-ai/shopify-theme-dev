@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Settings, Key, Wand2, ArrowRight, Video, Sparkles, AlertCircle, Save, RefreshCw, Clock, ChevronRight, Trash2 } from 'lucide-react';
 import { generateDescription } from './lib/gemini';
+import { db } from './lib/firebase';
+import { collection, doc, setDoc, getDocs, deleteDoc, query, orderBy } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
 import './index.css';
 
@@ -21,18 +23,8 @@ function App() {
 
   // History States
   // history structure: [{ id, productName, versions: [ { id, result, timestamp } ], lastUpdated }]
-  const [history, setHistory] = useState(() => {
-    // Load History synchronously on initialization to avoid empty overwrite race conditions
-    const savedHistory = localStorage.getItem('cinecraft_history');
-    if (savedHistory) {
-      try {
-        return JSON.parse(savedHistory);
-      } catch (e) {
-        console.error("Failed to parse history");
-      }
-    }
-    return [];
-  });
+  const [history, setHistory] = useState([]);
+  const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const [activeHistoryId, setActiveHistoryId] = useState(null);
   const [activeVersionId, setActiveVersionId] = useState(null);
 
@@ -44,12 +36,24 @@ function App() {
     } else {
       setShowSettings(true);
     }
-  }, []);
 
-  // Sync history to localStorage
-  useEffect(() => {
-    localStorage.setItem('cinecraft_history', JSON.stringify(history));
-  }, [history]);
+    // Load History from Firestore
+    const fetchHistory = async () => {
+      try {
+        const historyRef = collection(db, "history");
+        const q = query(historyRef, orderBy("lastUpdated", "desc"));
+        const snapshot = await getDocs(q);
+        const historyData = snapshot.docs.map(doc => doc.data());
+        setHistory(historyData);
+      } catch (err) {
+        console.error("Failed to fetch history from Firebase:", err);
+      } finally {
+        setIsHistoryLoaded(true);
+      }
+    };
+
+    fetchHistory();
+  }, []);
 
   const saveApiKey = (key) => {
     setApiKey(key);
@@ -120,7 +124,7 @@ function App() {
     }
   };
 
-  const saveToHistory = () => {
+  const saveToHistory = async () => {
     if (!result || !productName) return;
 
     const newVersion = {
@@ -129,36 +133,46 @@ function App() {
       timestamp: new Date().toISOString()
     };
 
-    setHistory(prev => {
-      // Check if product already exists
-      const existingIdx = prev.findIndex(h => h.productName.toLowerCase() === productName.trim().toLowerCase());
+    let updatedHistoryList = [...history];
+    const existingIdx = updatedHistoryList.findIndex(h => h.productName.toLowerCase() === productName.trim().toLowerCase());
 
-      if (existingIdx >= 0) {
-        const updatedHistory = [...prev];
-        updatedHistory[existingIdx] = {
-          ...updatedHistory[existingIdx],
-          versions: [newVersion, ...updatedHistory[existingIdx].versions],
-          lastUpdated: newVersion.timestamp
-        };
-        setActiveHistoryId(updatedHistory[existingIdx].id);
-        setActiveVersionId(newVersion.id);
-        return updatedHistory.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
-      } else {
-        const newProduct = {
-          id: Date.now().toString() + "-prod",
-          productName: productName.trim(),
-          versions: [newVersion],
-          lastUpdated: newVersion.timestamp
-        };
-        setActiveHistoryId(newProduct.id);
-        setActiveVersionId(newVersion.id);
-        return [newProduct, ...prev];
-      }
-    });
+    let productToSave = null;
 
-    // Provide visual feedback (clearing result implies moving to history/ready to generate again)
-    // We intentionally DO NOT clear the input materials/files here so the user can continue generating versions for the same product
-    setResult(null);
+    if (existingIdx >= 0) {
+      productToSave = {
+        ...updatedHistoryList[existingIdx],
+        versions: [newVersion, ...updatedHistoryList[existingIdx].versions],
+        lastUpdated: newVersion.timestamp
+      };
+      updatedHistoryList[existingIdx] = productToSave;
+      updatedHistoryList.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+    } else {
+      productToSave = {
+        id: Date.now().toString() + "-prod",
+        productName: productName.trim(),
+        versions: [newVersion],
+        lastUpdated: newVersion.timestamp
+      };
+      updatedHistoryList = [productToSave, ...updatedHistoryList];
+    }
+
+    try {
+      if (!isHistoryLoaded) return; // safeguard
+
+      // Save directly to Firestore using the product ID as the document ID
+      await setDoc(doc(db, "history", productToSave.id), productToSave);
+
+      // Update local state after successful cloud save
+      setHistory(updatedHistoryList);
+      setActiveHistoryId(productToSave.id);
+      setActiveVersionId(newVersion.id);
+
+      // Provide visual feedback (clearing result implies moving to history/ready to generate again)
+      setResult(null);
+    } catch (err) {
+      console.error("Failed to save to Firebase:", err);
+      alert("Failed to save to cloud database. Please check your network context.");
+    }
   };
 
   const loadHistoryItem = (historyId, versionId) => {
@@ -179,44 +193,50 @@ function App() {
     setResult(ver.result);
   };
 
-  const deleteHistoryProduct = (e, productId) => {
+  const deleteHistoryProduct = async (e, productId) => {
     e.stopPropagation();
-    setHistory(prev => prev.filter(h => h.id !== productId));
-    if (activeHistoryId === productId) {
-      startNew();
+    try {
+      await deleteDoc(doc(db, "history", productId));
+      setHistory(prev => prev.filter(h => h.id !== productId));
+      if (activeHistoryId === productId) {
+        startNew();
+      }
+    } catch (err) {
+      console.error("Failed to delete product from Firebase:", err);
     }
   };
 
-  const deleteHistoryVersion = (e, productId, versionId) => {
+  const deleteHistoryVersion = async (e, productId, versionId) => {
     e.stopPropagation();
-    let productDeleted = false;
-    let remainingVersions = [];
 
-    setHistory(prev => {
-      const updated = [...prev];
-      const prodIdx = updated.findIndex(h => h.id === productId);
-      if (prodIdx >= 0) {
-        const prod = updated[prodIdx];
-        prod.versions = prod.versions.filter(v => v.id !== versionId);
-        remainingVersions = prod.versions;
+    // Find the product to edit
+    const prodIdx = history.findIndex(h => h.id === productId);
+    if (prodIdx < 0) return;
 
-        if (prod.versions.length === 0) {
-          productDeleted = true;
-          return updated.filter(h => h.id !== productId);
-        } else {
-          prod.lastUpdated = prod.versions[0].timestamp;
-          updated[prodIdx] = { ...prod };
+    let productToUpdate = { ...history[prodIdx] };
+    productToUpdate.versions = productToUpdate.versions.filter(v => v.id !== versionId);
+
+    try {
+      if (productToUpdate.versions.length === 0) {
+        // If no versions left, delete the entire product
+        await deleteDoc(doc(db, "history", productId));
+        setHistory(prev => prev.filter(h => h.id !== productId));
+        if (activeHistoryId === productId) startNew();
+      } else {
+        // Otherwise update the document and lastUpdated timestamp
+        productToUpdate.lastUpdated = productToUpdate.versions[0].timestamp;
+        await setDoc(doc(db, "history", productId), productToUpdate);
+
+        let newHistory = [...history];
+        newHistory[prodIdx] = productToUpdate;
+        setHistory(newHistory);
+
+        if (activeHistoryId === productId && activeVersionId === versionId) {
+          loadHistoryItem(productId, productToUpdate.versions[0].id);
         }
       }
-      return updated;
-    });
-
-    if (activeHistoryId === productId && activeVersionId === versionId) {
-      if (productDeleted || remainingVersions.length === 0) {
-        startNew();
-      } else {
-        loadHistoryItem(productId, remainingVersions[0].id);
-      }
+    } catch (err) {
+      console.error("Failed to delete version from Firebase:", err);
     }
   };
 
