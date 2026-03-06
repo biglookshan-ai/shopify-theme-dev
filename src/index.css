@@ -329,18 +329,25 @@ textarea::placeholder {
     z-index: 99;
   }
 
+  .main-panel-group {
+    display: block !important;
+    height: auto !important;
+  }
+
   /* Clear Panel inline styles */
   .content-panel,
   .input-panel-wrapper,
   .output-panel-wrapper {
+    display: block !important;
     width: 100% !important;
     height: auto !important;
     flex-basis: auto !important;
+    flex: none !important;
   }
 
   /* Stack panels */
   .nested-panel-group {
-    flex-direction: column !important;
+    display: block !important;
     height: auto !important;
     min-height: auto !important;
   }

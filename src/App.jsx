@@ -285,7 +285,7 @@ function App() {
       {isMobile && showMobileSidebar && <div className="mobile-overlay" onClick={() => setShowMobileSidebar(false)} />}
 
       <PanelGroup direction="horizontal" autoSaveId="cinecraft-layout" className="main-panel-group">
-        <Panel defaultSize={20} minSize={15} maxSize={40} className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
+        <Panel defaultSize={20} minSize={10} maxSize={60} className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
           <aside className="sidebar">
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
               <div style={{
@@ -417,7 +417,7 @@ function App() {
           </aside>
         </Panel>
         <ResizeHandle />
-        <Panel defaultSize={80} minSize={50} className="content-panel">
+        <Panel defaultSize={80} minSize={40} className="content-panel">
           <main className="main-content">
             <header className="desktop-only" style={{
               display: 'flex',
