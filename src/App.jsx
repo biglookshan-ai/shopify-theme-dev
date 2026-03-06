@@ -570,7 +570,7 @@ function App() {
                       cursor: isGenerating ? 'not-allowed' : 'pointer',
                       fontWeight: 600, fontSize: '1rem',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-                      boxShadow: isGenerating ? 'none' : '0 8px 24px rgba(121, 40, 202, 0.4)',
+                      boxShadow: isGenerating ? 'none' : '0 8px 24px rgba(255, 179, 0, 0.4)',
                       transition: 'all 0.3s'
                     }}
                   >
