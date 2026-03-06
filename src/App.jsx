@@ -285,7 +285,7 @@ function App() {
       {isMobile && showMobileSidebar && <div className="mobile-overlay" onClick={() => setShowMobileSidebar(false)} />}
 
       <PanelGroup direction="horizontal" autoSaveId="cinecraft-layout" className="main-panel-group">
-        <Panel defaultSize={20} minSize={10} maxSize={60} className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
+        <Panel defaultSize={30} minSize={15} maxSize={50} className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
           <aside className="sidebar">
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
               <div style={{
@@ -417,7 +417,7 @@ function App() {
           </aside>
         </Panel>
         <ResizeHandle />
-        <Panel defaultSize={80} minSize={40} className="content-panel">
+        <Panel defaultSize={70} minSize={50} className="content-panel">
           <main className="main-content">
             <header className="desktop-only" style={{
               display: 'flex',
@@ -450,7 +450,7 @@ function App() {
             </header>
 
             <PanelGroup direction="horizontal" className="nested-panel-group">
-              <Panel defaultSize={45} minSize={30} className="input-panel-wrapper">
+              <Panel defaultSize={45} minSize={25} className="input-panel-wrapper">
                 {/* Left Column - Input */}
                 <div className="inner-scroll-col" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingRight: '16px' }}>
                   <div>
