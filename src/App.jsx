@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Settings, Key, Wand2, ArrowRight, Video, Sparkles, AlertCircle, Save, RefreshCw, Clock, ChevronRight, Trash2 } from 'lucide-react';
+import { Camera, Settings, Key, Wand2, ArrowRight, Video, Sparkles, AlertCircle, Save, RefreshCw, Clock, ChevronRight, Trash2, Menu } from 'lucide-react';
 import { generateDescription } from './lib/gemini';
 import { db } from './lib/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc, query, orderBy } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import './index.css';
+
+const ResizeHandle = () => (
+  <PanelResizeHandle className="resize-handle desktop-only">
+    <div className="resize-handle-bar" />
+  </PanelResizeHandle>
+);
 
 function App() {
   const [apiKey, setApiKey] = useState('');
@@ -27,6 +34,15 @@ function App() {
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const [activeHistoryId, setActiveHistoryId] = useState(null);
   const [activeVersionId, setActiveVersionId] = useState(null);
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     // Load API key from local storage
@@ -191,6 +207,10 @@ function App() {
     setActiveVersionId(ver.id);
     setProductName(prod.productName);
     setResult(ver.result);
+    // Close mobile sidebar on select
+    if (window.innerWidth <= 900) {
+      setShowMobileSidebar(false);
+    }
   };
 
   const deleteHistoryProduct = async (e, productId) => {
@@ -252,411 +272,431 @@ function App() {
 
   return (
     <div className="app-layout">
-      {/* Sidebar - History */}
-      <aside className="sidebar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
-          <div style={{
-            background: 'var(--accent-gradient)',
-            padding: '8px',
-            borderRadius: 'var(--radius-md)',
-            boxShadow: 'var(--shadow-glow)'
-          }}>
-            <Camera color="white" size={20} />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h1 style={{ fontSize: '1.1rem', margin: 0, lineHeight: 1.2 }}>
-              Product Content
-              <div className="text-gradient">Generator</div>
-            </h1>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>By CineGearPro</span>
-          </div>
+      {isMobile && (
+        <div className="mobile-header mobile-only">
+          <button onClick={() => setShowMobileSidebar(true)} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}><Menu size={24} /></button>
+          <h1 style={{ fontSize: '1.1rem', margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            Product Content <span className="text-gradient">Generator</span>
+          </h1>
+          <button onClick={() => setShowSettings(true)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><Settings size={20} /></button>
         </div>
+      )}
 
-        <button
-          onClick={startNew}
-          style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid var(--border-color)',
-            color: 'white',
-            padding: '12px',
-            borderRadius: 'var(--radius-sm)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            marginBottom: '24px',
-            fontWeight: 500,
-            transition: 'all 0.2s'
-          }}
-          onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-          onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-        >
-          <Sparkles size={16} /> New Description
-        </button>
+      {isMobile && showMobileSidebar && <div className="mobile-overlay" onClick={() => setShowMobileSidebar(false)} />}
 
-        <div style={{
-          fontSize: '0.8rem',
-          textTransform: 'uppercase',
-          color: 'var(--text-muted)',
-          fontWeight: 700,
-          letterSpacing: '1px',
-          marginBottom: '12px'
-        }}>
-          History Vault
-        </div>
+      <PanelGroup direction="horizontal" autoSaveId="cinecraft-layout" className="main-panel-group">
+        <Panel defaultSize={20} minSize={15} maxSize={40} className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
+          <aside className="sidebar">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
+              <div style={{
+                background: 'var(--accent-gradient)',
+                padding: '8px',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: 'var(--shadow-glow)'
+              }}>
+                <Camera color="white" size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <h1 style={{ fontSize: '1.1rem', margin: 0, lineHeight: 1.2 }}>
+                  Product Content
+                  <div className="text-gradient">Generator</div>
+                </h1>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>By CineGearPro</span>
+              </div>
+            </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto' }}>
-          {history.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', marginTop: '24px' }}>
-              No history yet. Start generating!
-            </p>
-          ) : (
-            history.map(prod => (
-              <div key={prod.id} style={{ display: 'flex', flexDirection: 'column' }}>
-                <div
-                  className={`history-item ${activeHistoryId === prod.id ? 'active' : ''}`}
-                  onClick={() => loadHistoryItem(prod.id, prod.versions[0].id)}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <div className="history-title" style={{ margin: 0 }}>{prod.productName}</div>
-                    <button
-                      onClick={(e) => deleteHistoryProduct(e, prod.id)}
-                      style={{
-                        background: 'transparent', border: 'none', color: 'var(--text-muted)',
-                        cursor: 'pointer', padding: '2px'
-                      }}
-                      onMouseOver={e => e.currentTarget.style.color = 'var(--error-color)'}
-                      onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
+            <button
+              onClick={startNew}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid var(--border-color)',
+                color: 'white',
+                padding: '12px',
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                marginBottom: '24px',
+                fontWeight: 500,
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+              onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            >
+              <Sparkles size={16} /> New Description
+            </button>
+
+            <div style={{
+              fontSize: '0.8rem',
+              textTransform: 'uppercase',
+              color: 'var(--text-muted)',
+              fontWeight: 700,
+              letterSpacing: '1px',
+              marginBottom: '12px'
+            }}>
+              History Vault
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto' }}>
+              {history.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', marginTop: '24px' }}>
+                  No history yet. Start generating!
+                </p>
+              ) : (
+                history.map(prod => (
+                  <div key={prod.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div
+                      className={`history-item ${activeHistoryId === prod.id ? 'active' : ''}`}
+                      onClick={() => loadHistoryItem(prod.id, prod.versions[0].id)}
                     >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                  <div className="history-meta">
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Clock size={12} />
-                      {new Date(prod.lastUpdated).toLocaleDateString()}
-                    </span>
-                    <span>{prod.versions.length} ver(s)</span>
-                  </div>
-                </div>
-
-                {/* Visual sub-list if active and has multiple versions */}
-                {activeHistoryId === prod.id && prod.versions.length > 1 && (
-                  <div style={{ paddingLeft: '16px', borderLeft: '2px solid var(--border-color)', marginLeft: '12px', marginBottom: '8px' }}>
-                    {prod.versions.map((ver, idx) => (
-                      <div
-                        key={ver.id}
-                        onClick={() => loadHistoryItem(prod.id, ver.id)}
-                        style={{
-                          padding: '6px 8px',
-                          fontSize: '0.8rem',
-                          color: activeVersionId === ver.id ? 'var(--accent-color)' : 'var(--text-secondary)',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <ChevronRight size={12} />
-                          Version {prod.versions.length - idx}
-                        </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <div className="history-title" style={{ margin: 0 }}>{prod.productName}</div>
                         <button
-                          onClick={(e) => deleteHistoryVersion(e, prod.id, ver.id)}
+                          onClick={(e) => deleteHistoryProduct(e, prod.id)}
                           style={{
                             background: 'transparent', border: 'none', color: 'var(--text-muted)',
-                            cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center'
+                            cursor: 'pointer', padding: '2px'
                           }}
                           onMouseOver={e => e.currentTarget.style.color = 'var(--error-color)'}
                           onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
                         >
-                          <Trash2 size={12} />
+                          <Trash2 size={14} />
                         </button>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-      </aside>
+                      <div className="history-meta">
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Clock size={12} />
+                          {new Date(prod.lastUpdated).toLocaleDateString()}
+                        </span>
+                        <span>{prod.versions.length} ver(s)</span>
+                      </div>
+                    </div>
 
-      {/* Main Content */}
-      <main className="main-content">
-        <header style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
-          padding: '24px 0',
-          marginBottom: '12px'
-        }}>
-          <button
-            onClick={() => setShowSettings(true)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-secondary)',
-              padding: '8px 16px',
-              borderRadius: 'var(--radius-sm)',
+                    {/* Visual sub-list if active and has multiple versions */}
+                    {activeHistoryId === prod.id && prod.versions.length > 1 && (
+                      <div style={{ paddingLeft: '16px', borderLeft: '2px solid var(--border-color)', marginLeft: '12px', marginBottom: '8px' }}>
+                        {prod.versions.map((ver, idx) => (
+                          <div
+                            key={ver.id}
+                            onClick={() => loadHistoryItem(prod.id, ver.id)}
+                            style={{
+                              padding: '6px 8px',
+                              fontSize: '0.8rem',
+                              color: activeVersionId === ver.id ? 'var(--accent-color)' : 'var(--text-secondary)',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <ChevronRight size={12} />
+                              Version {prod.versions.length - idx}
+                            </div>
+                            <button
+                              onClick={(e) => deleteHistoryVersion(e, prod.id, ver.id)}
+                              style={{
+                                background: 'transparent', border: 'none', color: 'var(--text-muted)',
+                                cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center'
+                              }}
+                              onMouseOver={e => e.currentTarget.style.color = 'var(--error-color)'}
+                              onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </aside>
+        </Panel>
+        <ResizeHandle />
+        <Panel defaultSize={80} minSize={50} className="content-panel">
+          <main className="main-content">
+            <header className="desktop-only" style={{
               display: 'flex',
+              justifyContent: 'flex-end',
               alignItems: 'center',
-              gap: '8px',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              fontFamily: 'inherit',
-              fontWeight: 500
-            }}
-            onMouseOver={(e) => e.currentTarget.style.color = 'white'}
-            onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
-          >
-            <Settings size={18} /> API Configuration
-          </button>
-        </header>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.2fr)', gap: '32px' }}>
-          {/* Left Column - Input */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div>
-              <h2 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>Draft Workspace</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-                Fill in the details. Gemini will synthesize and format everything into perfect British English.
-              </p>
-            </div>
-
-            <div className="glass-panel" style={{ padding: '24px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, marginBottom: '8px' }}>
-                <Camera size={18} color="var(--accent-color)" /> Product Name *
-              </label>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '12px' }}>
-                A short identifier for your history list.
-              </p>
-              <input
-                type="text"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                placeholder="e.g. Arri Alexa 35, DZOFILM Catta..."
-              />
-            </div>
-
-            <div className="glass-panel" style={{ padding: '24px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, marginBottom: '8px' }}>
-                <Video size={18} color="var(--accent-color)" /> Product Materials *
-              </label>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '12px' }}>
-                Paste your raw specs, Chinese drafts, or feature lists here.
-              </p>
-              <textarea
-                value={materials}
-                onChange={(e) => setMaterials(e.target.value)}
-                placeholder="e.g. 新款电影机，全画幅传感器，支持 8K 60fps 录制..."
-                style={{ minHeight: '120px', resize: 'vertical', marginBottom: '16px' }}
-              />
-
-              {/* File Upload Section */}
-              <div style={{
-                border: '2px dashed var(--border-color)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '16px',
-                textAlign: 'center',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'all 0.2s',
-                background: 'rgba(0,0,0,0.2)'
-              }}
-                onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--text-secondary)'}
-                onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
-              >
-                <input
-                  type="file"
-                  multiple
-                  onChange={handleFileUpload}
-                  accept="image/*,.pdf,.doc,.docx,.txt"
-                  style={{
-                    position: 'absolute',
-                    top: 0, left: 0, right: 0, bottom: 0,
-                    opacity: 0,
-                    cursor: 'pointer'
-                  }}
-                />
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
-                  Drag & drop or tap to attach Files/Images (max 20MB)
-                </p>
-              </div>
-
-              {files.length > 0 && (
-                <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {files.map((file, index) => (
-                    <div key={index} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      background: 'rgba(0,0,0,0.4)', padding: '8px 12px',
-                      borderRadius: 'var(--radius-sm)', fontSize: '0.85rem'
-                    }}>
-                      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '85%' }}>
-                        {file.name}
-                      </span>
-                      <button onClick={() => removeFile(index)} style={{ background: 'transparent', border: 'none', color: 'var(--error-color)', cursor: 'pointer' }}>×</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="glass-panel" style={{ padding: '24px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, marginBottom: '8px' }}>
-                <Sparkles size={18} color="var(--accent-color)" /> Reference Links
-              </label>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '12px' }}>
-                Paste URLs (competitors, official site).
-              </p>
-              <textarea
-                value={references}
-                onChange={(e) => setReferences(e.target.value)}
-                placeholder="https://..."
-                style={{ minHeight: '80px', resize: 'vertical' }}
-              />
-            </div>
-
-            {error && (
-              <div style={{
-                background: 'rgba(255, 51, 102, 0.1)',
-                border: '1px solid var(--error-color)',
-                color: 'var(--error-color)',
-                padding: '16px', borderRadius: 'var(--radius-sm)',
-                display: 'flex', alignItems: 'center', gap: '12px'
-              }}>
-                <AlertCircle size={20} />
-                <span style={{ fontSize: '0.9rem' }}>{error}</span>
-              </div>
-            )}
-
-            <button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              style={{
-                background: isGenerating ? 'var(--bg-surface)' : 'var(--accent-gradient)',
-                border: isGenerating ? '1px solid var(--border-color)' : 'none',
-                color: isGenerating ? 'var(--text-secondary)' : 'white',
-                padding: '16px',
-                borderRadius: 'var(--radius-md)',
-                cursor: isGenerating ? 'not-allowed' : 'pointer',
-                fontWeight: 600, fontSize: '1rem',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-                boxShadow: isGenerating ? 'none' : '0 8px 24px rgba(121, 40, 202, 0.4)',
-                transition: 'all 0.3s'
-              }}
-            >
-              {isGenerating ? (
-                <>
-                  <div style={{
-                    width: '20px', height: '20px',
-                    border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--accent-color)',
-                    borderRadius: '50%', animation: 'spin 1s linear infinite'
-                  }} />
-                  Synthesizing...
-                </>
-              ) : (
-                <>Generate Description <Wand2 size={20} /></>
-              )}
-              <style>{'@keyframes spin { 100% { transform: rotate(360deg); } }'}</style>
-            </button>
-          </div>
-
-          {/* Right Column - Output */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="glass-panel" style={{
-              flexGrow: 1,
-              padding: '32px',
-              display: 'flex',
-              flexDirection: 'column',
-              position: 'relative'
+              padding: '24px 0',
+              marginBottom: '12px'
             }}>
-              <div style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', marginBottom: '24px'
-              }}>
-                <h3 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                  <ArrowRight color="var(--accent-color)" /> Output Result
-                </h3>
+              <button
+                onClick={() => setShowSettings(true)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  padding: '8px 16px',
+                  borderRadius: 'var(--radius-sm)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: 'inherit',
+                  fontWeight: 500
+                }}
+                onMouseOver={(e) => e.currentTarget.style.color = 'white'}
+                onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+              >
+                <Settings size={18} /> API Configuration
+              </button>
+            </header>
 
-                {/* Save & Regenerate Actions appear when there is a result */}
-                {result && (
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <button
-                      onClick={handleGenerate}
-                      disabled={isGenerating}
-                      style={{
-                        background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)',
-                        color: 'white', padding: '8px 16px', borderRadius: 'var(--radius-sm)',
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem'
-                      }}
-                    >
-                      <RefreshCw size={14} /> Regenerate
-                    </button>
-                    <button
-                      onClick={saveToHistory}
-                      style={{
-                        background: 'var(--accent-color)', border: 'none',
-                        color: 'white', padding: '8px 16px', borderRadius: 'var(--radius-sm)',
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem',
-                        fontWeight: 600
-                      }}
-                    >
-                      <Save size={14} /> Save Version
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {result ? (
-                <div style={{ color: 'var(--text-primary)', overflowY: 'auto' }}>
-
-                  {/* TITLE RENDER */}
-                  <div style={{ marginBottom: '32px' }}>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--accent-color)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '1px', marginBottom: '8px' }}>Title</div>
-                    <h2 style={{ fontSize: '1.4rem', lineHeight: '1.4', margin: 0 }}>{result.title}</h2>
-                  </div>
-
-                  {/* OVERVIEW RENDER */}
-                  <div style={{ marginBottom: '32px' }}>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--accent-color)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '1px', marginBottom: '8px' }}>Overview</div>
-                    <div className="markdown-body" style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-                      <ReactMarkdown components={{
-                        strong: ({ node, ...props }) => <strong style={{ color: 'white', fontWeight: 600 }} {...props} />
-                      }}>{result.overview}</ReactMarkdown>
-                    </div>
-                  </div>
-
-                  {/* FEATURES RENDER */}
+            <PanelGroup direction="horizontal" className="nested-panel-group">
+              <Panel defaultSize={45} minSize={30} className="input-panel-wrapper">
+                {/* Left Column - Input */}
+                <div className="inner-scroll-col" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingRight: '16px' }}>
                   <div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--accent-color)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '1px', marginBottom: '12px' }}>Features</div>
-                    <ul style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-secondary)' }}>
-                      {result.features && result.features.map((feature, idx) => (
-                        <li key={idx} style={{ marginBottom: '12px', lineHeight: 1.6 }}>
-                          <ReactMarkdown components={{
-                            p: ({ node, ...props }) => <span {...props} />, // Prevent paragraphs inside list items
-                            strong: ({ node, ...props }) => <strong style={{ color: 'white', fontWeight: 600 }} {...props} />
-                          }}>{feature}</ReactMarkdown>
-                        </li>
-                      ))}
-                    </ul>
+                    <h2 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>Draft Workspace</h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+                      Fill in the details. Gemini will synthesize and format everything into perfect British English.
+                    </p>
                   </div>
 
+                  <div className="glass-panel" style={{ padding: '24px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, marginBottom: '8px' }}>
+                      <Camera size={18} color="var(--accent-color)" /> Product Name *
+                    </label>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '12px' }}>
+                      A short identifier for your history list.
+                    </p>
+                    <input
+                      type="text"
+                      value={productName}
+                      onChange={(e) => setProductName(e.target.value)}
+                      placeholder="e.g. Arri Alexa 35, DZOFILM Catta Zoom..."
+                    />
+                  </div>
+
+                  <div className="glass-panel" style={{ padding: '24px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, marginBottom: '8px' }}>
+                      <Video size={18} color="var(--accent-color)" /> Product Materials *
+                    </label>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '12px' }}>
+                      Paste your raw specs, Chinese drafts, or feature lists here.
+                    </p>
+                    <textarea
+                      value={materials}
+                      onChange={(e) => setMaterials(e.target.value)}
+                      placeholder="e.g. Full-frame cinema camera, 8K 60fps RAW internal recording, 17 stops dynamic range, dual native ISO..."
+                      style={{ minHeight: '120px', resize: 'vertical', marginBottom: '16px' }}
+                    />
+
+                    {/* File Upload Section */}
+                    <div style={{
+                      border: '2px dashed var(--border-color)',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '16px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      transition: 'all 0.2s',
+                      background: 'rgba(0,0,0,0.2)'
+                    }}
+                      onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--text-secondary)'}
+                      onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                    >
+                      <input
+                        type="file"
+                        multiple
+                        onChange={handleFileUpload}
+                        accept="image/*,.pdf,.doc,.docx,.txt"
+                        style={{
+                          position: 'absolute',
+                          top: 0, left: 0, right: 0, bottom: 0,
+                          opacity: 0,
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
+                        Drag & drop or tap to attach Files/Images (max 20MB)
+                      </p>
+                    </div>
+
+                    {files.length > 0 && (
+                      <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {files.map((file, index) => (
+                          <div key={index} style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            background: 'rgba(0,0,0,0.4)', padding: '8px 12px',
+                            borderRadius: 'var(--radius-sm)', fontSize: '0.85rem'
+                          }}>
+                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '85%' }}>
+                              {file.name}
+                            </span>
+                            <button onClick={() => removeFile(index)} style={{ background: 'transparent', border: 'none', color: 'var(--error-color)', cursor: 'pointer' }}>×</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="glass-panel" style={{ padding: '24px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, marginBottom: '8px' }}>
+                      <Sparkles size={18} color="var(--accent-color)" /> Reference Links
+                    </label>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '12px' }}>
+                      Paste URLs (competitors, official site).
+                    </p>
+                    <textarea
+                      value={references}
+                      onChange={(e) => setReferences(e.target.value)}
+                      placeholder="Paste URLs (official site, news coverage, competitor products). e.g., https://..."
+                      style={{ minHeight: '80px', resize: 'vertical' }}
+                    />
+                  </div>
+
+                  {error && (
+                    <div style={{
+                      background: 'rgba(255, 51, 102, 0.1)',
+                      border: '1px solid var(--error-color)',
+                      color: 'var(--error-color)',
+                      padding: '16px', borderRadius: 'var(--radius-sm)',
+                      display: 'flex', alignItems: 'center', gap: '12px'
+                    }}>
+                      <AlertCircle size={20} />
+                      <span style={{ fontSize: '0.9rem' }}>{error}</span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleGenerate}
+                    disabled={isGenerating}
+                    style={{
+                      background: isGenerating ? 'var(--bg-surface)' : 'var(--accent-gradient)',
+                      border: isGenerating ? '1px solid var(--border-color)' : 'none',
+                      color: isGenerating ? 'var(--text-secondary)' : 'white',
+                      padding: '16px',
+                      borderRadius: 'var(--radius-md)',
+                      cursor: isGenerating ? 'not-allowed' : 'pointer',
+                      fontWeight: 600, fontSize: '1rem',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
+                      boxShadow: isGenerating ? 'none' : '0 8px 24px rgba(121, 40, 202, 0.4)',
+                      transition: 'all 0.3s'
+                    }}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <div style={{
+                          width: '20px', height: '20px',
+                          border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--accent-color)',
+                          borderRadius: '50%', animation: 'spin 1s linear infinite'
+                        }} />
+                        Synthesizing...
+                      </>
+                    ) : (
+                      <>Generate Description <Wand2 size={20} /></>
+                    )}
+                    <style>{'@keyframes spin { 100% { transform: rotate(360deg); } }'}</style>
+                  </button>
                 </div>
-              ) : (
-                <div style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  justifyContent: 'center', flexGrow: 1, opacity: 0.5, gap: '16px'
-                }}>
-                  <Wand2 size={48} strokeWidth={1} />
-                  <p>Your polished British English description will appear here.</p>
+              </Panel>
+              <ResizeHandle />
+              <Panel defaultSize={55} minSize={30} className="output-panel-wrapper">
+                {/* Right Column - Output */}
+                <div className="inner-scroll-col" style={{ display: 'flex', flexDirection: 'column', paddingLeft: '16px' }}>
+                  <div className="glass-panel" style={{
+                    flexGrow: 1,
+                    padding: '32px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    position: 'relative'
+                  }}>
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', marginBottom: '24px'
+                    }}>
+                      <h3 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                        <ArrowRight color="var(--accent-color)" /> Output Result
+                      </h3>
+
+                      {/* Save & Regenerate Actions appear when there is a result */}
+                      {result && (
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                          <button
+                            onClick={handleGenerate}
+                            disabled={isGenerating}
+                            style={{
+                              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)',
+                              color: 'white', padding: '8px 16px', borderRadius: 'var(--radius-sm)',
+                              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem'
+                            }}
+                          >
+                            <RefreshCw size={14} /> Regenerate
+                          </button>
+                          <button
+                            onClick={saveToHistory}
+                            style={{
+                              background: 'var(--accent-color)', border: 'none',
+                              color: 'white', padding: '8px 16px', borderRadius: 'var(--radius-sm)',
+                              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem',
+                              fontWeight: 600
+                            }}
+                          >
+                            <Save size={14} /> Save Version
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {result ? (
+                      <div style={{ color: 'var(--text-primary)', overflowY: 'auto' }}>
+
+                        {/* TITLE RENDER */}
+                        <div style={{ marginBottom: '32px' }}>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--accent-color)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '1px', marginBottom: '8px' }}>Title</div>
+                          <h2 style={{ fontSize: '1.4rem', lineHeight: '1.4', margin: 0 }}>{result.title}</h2>
+                        </div>
+
+                        {/* OVERVIEW RENDER */}
+                        <div style={{ marginBottom: '32px' }}>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--accent-color)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '1px', marginBottom: '8px' }}>Overview</div>
+                          <div className="markdown-body" style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                            <ReactMarkdown components={{
+                              strong: ({ node, ...props }) => <strong style={{ color: 'white', fontWeight: 600 }} {...props} />
+                            }}>{result.overview}</ReactMarkdown>
+                          </div>
+                        </div>
+
+                        {/* FEATURES RENDER */}
+                        <div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--accent-color)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '1px', marginBottom: '12px' }}>Features</div>
+                          <ul style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-secondary)' }}>
+                            {result.features && result.features.map((feature, idx) => (
+                              <li key={idx} style={{ marginBottom: '12px', lineHeight: 1.6 }}>
+                                <ReactMarkdown components={{
+                                  p: ({ node, ...props }) => <span {...props} />, // Prevent paragraphs inside list items
+                                  strong: ({ node, ...props }) => <strong style={{ color: 'white', fontWeight: 600 }} {...props} />
+                                }}>{feature}</ReactMarkdown>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                      </div>
+                    ) : (
+                      <div style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center',
+                        justifyContent: 'center', flexGrow: 1, opacity: 0.5, gap: '16px'
+                      }}>
+                        <Wand2 size={48} strokeWidth={1} />
+                        <p>Your polished British English description will appear here.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </main >
+              </Panel>
+            </PanelGroup>
+          </main>
+        </Panel>
+      </PanelGroup>
 
       {/* Settings Modal */}
       {
@@ -711,7 +751,7 @@ function App() {
           </div>
         )
       }
-    </div >
+    </div>
   );
 }
 
