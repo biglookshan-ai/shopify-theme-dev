@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Settings, Key, Wand2, ArrowRight, Video, Sparkles, AlertCircle, Save, RefreshCw, Clock, ChevronRight, Trash2, Menu } from 'lucide-react';
-import { generateDescription } from './lib/gemini';
+import { generateDescription } from './lib/ai';
 import { db } from './lib/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc, query, orderBy } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
 import './index.css';
 
 function App() {
-  const [apiKey, setApiKey] = useState('');
+  const [engineStatus, setEngineStatus] = useState('Standby');
   const [showSettings, setShowSettings] = useState(false);
 
   // Input States
@@ -38,15 +38,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Load API key from local storage
-    const savedKey = localStorage.getItem('gemini_api_key');
-    if (savedKey) {
-      setApiKey(savedKey);
-    } else {
-      setShowSettings(true);
-    }
-
-    // Load History from Firestore
+    // History Loading now doesn't depend on API key
     const fetchHistory = async () => {
       try {
         const historyRef = collection(db, "history");
@@ -64,11 +56,7 @@ function App() {
     fetchHistory();
   }, []);
 
-  const saveApiKey = (key) => {
-    setApiKey(key);
-    localStorage.setItem('gemini_api_key', key);
-    setShowSettings(false);
-  };
+  // API Keys are now managed via .env
 
   const handleFileUpload = (e) => {
     const selectedFiles = Array.from(e.target.files);
@@ -123,11 +111,13 @@ function App() {
 
       // We pass productName into materials to give Gemini context if they didn't explicitly write it
       const combinedMaterials = `Product Name Concept: ${productName}\n---\n${materials}`;
-      const outputJson = await generateDescription(apiKey, combinedMaterials, references, processedFiles);
+      const outputJson = await generateDescription(combinedMaterials, references, processedFiles, setEngineStatus);
 
       setResult(outputJson);
+      setEngineStatus('Success');
     } catch (err) {
       setError(err.message);
+      setEngineStatus('Failed');
     } finally {
       setIsGenerating(false);
     }
@@ -271,7 +261,10 @@ function App() {
           <h1 style={{ fontSize: '1.1rem', margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             Product Content <span className="text-gradient">Generator</span>
           </h1>
-          <button onClick={() => setShowSettings(true)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><Settings size={20} /></button>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isGenerating ? 'var(--accent-color)' : 'var(--success-color, #10b981)' }} />
+            {engineStatus}
+          </div>
         </div>
       )}
 
@@ -411,35 +404,33 @@ function App() {
         </div>
         <div className="content-panel">
           <main className="main-content">
-            <header className="desktop-only" style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              padding: '24px 0',
-              marginBottom: '12px'
-            }}>
-              <button
-                onClick={() => setShowSettings(true)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--text-secondary)',
-                  padding: '8px 16px',
+              <div className="desktop-only" style={{
+                padding: '24px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                justifyContent: 'flex-end'
+              }}>
+                <div style={{
+                  fontSize: '0.8rem',
+                  color: 'var(--text-muted)',
+                  background: 'rgba(255,255,255,0.05)',
+                  padding: '6px 12px',
                   borderRadius: 'var(--radius-sm)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontFamily: 'inherit',
-                  fontWeight: 500
-                }}
-                onMouseOver={(e) => e.currentTarget.style.color = 'white'}
-                onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
-              >
-                <Settings size={18} /> API Configuration
-              </button>
-            </header>
+                  gap: '8px'
+                }}>
+                  <div style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: isGenerating ? '#eab308' : (engineStatus.includes('SiliconFlow') ? '#3b82f6' : '#10b981'),
+                    boxShadow: isGenerating ? '0 0 8px #eab308' : 'none'
+                  }} />
+                  Engine: <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{engineStatus}</span>
+                </div>
+              </div>
 
             <div className="nested-panel-group">
               <div className="input-panel-wrapper">
@@ -696,59 +687,7 @@ function App() {
         </div>
       </div>
 
-      {/* Settings Modal */}
-      {
-        showSettings && (
-          <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100
-          }}>
-            <div className="glass-panel" style={{ padding: '32px', width: '100%', maxWidth: '400px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                <Key color="var(--accent-color)" />
-                <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Configuration</h2>
-              </div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>
-                Enter your Google Gemini API Key. It will be stored securely in your browser's local storage.
-              </p>
-              <input
-                type="password"
-                placeholder="AIzaSy..."
-                defaultValue={apiKey}
-                id="api-key-input"
-                style={{ marginBottom: '24px' }}
-              />
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                {apiKey && (
-                  <button
-                    onClick={() => setShowSettings(false)}
-                    style={{
-                      background: 'transparent', border: 'none', color: 'var(--text-secondary)',
-                      padding: '10px 16px', borderRadius: 'var(--radius-sm)', cursor: 'pointer'
-                    }}
-                  >
-                    Cancel
-                  </button>
-                )}
-                <button
-                  onClick={() => {
-                    const val = document.getElementById('api-key-input').value;
-                    if (val) saveApiKey(val);
-                  }}
-                  style={{
-                    background: 'var(--accent-gradient)', border: 'none', color: 'white',
-                    padding: '10px 24px', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-                    fontWeight: 600
-                  }}
-                >
-                  Save & Continue
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      }
+      {/* Settings/API Modal Removed for Built-in Experience */}
     </div>
   );
 }
