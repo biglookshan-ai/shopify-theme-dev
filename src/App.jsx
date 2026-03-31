@@ -76,11 +76,6 @@ function App() {
   };
 
   const handleGenerate = async () => {
-    if (!apiKey) {
-      setError('Please configure your Gemini API Key first.');
-      setShowSettings(true);
-      return;
-    }
     if (!productName.trim()) {
       setError('Product Name is required to save the history.');
       return;
