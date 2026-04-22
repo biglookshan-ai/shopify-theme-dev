@@ -26,6 +26,8 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [copyFeedback, setCopyFeedback] = useState(false);
+  const [saveFeedback, setSaveFeedback] = useState(false);
 
   // History States
   const [history, setHistory] = useState([]);
@@ -193,11 +195,18 @@ function App() {
   };
 
   const saveToHistory = async () => {
-    if (!result || !productName) return;
+    if (!result) return;
+    
+    if (!productName.trim()) {
+      setError('Please enter a Product Name before saving to Vault.');
+      return;
+    }
+
     const newVersion = {
       id: Date.now().toString(),
       result: result,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      mode: genMode
     };
 
     let updatedHistoryList = [...history];
@@ -210,7 +219,6 @@ function App() {
         versions: [newVersion, ...updatedHistoryList[existingIdx].versions],
         lastUpdated: newVersion.timestamp
       };
-      updatedHistoryList[existingIdx] = productToSave;
     } else {
       productToSave = {
         id: Date.now().toString() + "-prod",
@@ -218,17 +226,22 @@ function App() {
         versions: [newVersion],
         lastUpdated: newVersion.timestamp
       };
-      updatedHistoryList = [productToSave, ...updatedHistoryList];
     }
 
     try {
+      setEngineStatus('Saving...');
       await setDoc(doc(db, "history", productToSave.id), productToSave);
-      // We rely on onSnapshot to update the history list
+      
       setActiveHistoryId(productToSave.id);
       setActiveVersionId(newVersion.id);
-      // Removed setResult(null) to allow user to see what they saved
+      setSaveFeedback(true);
+      setError(null);
+      setEngineStatus('Standby');
+      setTimeout(() => setSaveFeedback(false), 2000);
     } catch (err) {
       console.error("Failed to save to Firebase:", err);
+      setError("Database Error: Could not save to Vault.");
+      setEngineStatus('Error');
     }
   };
 
@@ -481,7 +494,17 @@ function App() {
                       {copyFeedback ? 'Copied!' : 'Copy HTML'}
                     </button>
                     {isExtension && <button onClick={applyToShopify} className="result-btn">Apply to Shopify</button>}
-                    <button onClick={saveToHistory} className="result-btn save-vault-btn">Save to Vault</button>
+                    <button 
+                      onClick={saveToHistory} 
+                      className={`result-btn save-vault-btn ${saveFeedback ? 'saved' : ''}`}
+                      style={{
+                        background: saveFeedback ? 'var(--success)' : 'transparent',
+                        borderColor: saveFeedback ? 'var(--success)' : 'var(--border-color)',
+                        color: saveFeedback ? 'white' : 'var(--text-secondary)'
+                      }}
+                    >
+                      {saveFeedback ? <><Save size={14} /> Saved!</> : 'Save to Vault'}
+                    </button>
                   </div>
               )}
             </div>
