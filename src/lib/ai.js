@@ -21,8 +21,9 @@ ${mode === 'detailed' ? `
 `}
 
 # Style Guidelines
-- Use MARKDOWN BOLD (**key spec**) for EVERY technical specification (e.g., **Full-frame**, **14 stops dynamic range**, **8K/60p**, **Carbon Fibre**).
-- Avoid fluff; focus on performance and professional utility.
+- **INTELLIGENT BOLDING**: You MUST identify and bold (**key points**) every technical specification, unique parameter, product material, and high-value selling point within the sentences (e.g., **Full-frame 8K sensor**, **17 stops of dynamic range**, **Carbon Fibre construction**, **Native ISO 800**).
+- **SPACING**: Ensure there is a clear empty line between different conceptual paragraphs in the overview and sections.
+- Avoid fluff; focus on professional utility and specific performance metrics.
 - Tone should be authoritative, premium, and sophisticated.
 
 # Output Format

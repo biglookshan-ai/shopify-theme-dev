@@ -57,14 +57,16 @@ function App() {
       : '';
 
     const descriptionHtml = `
-      <div class="product-description-ai" style="font-family: inherit;">
-        <div class="overview" style="margin-bottom: 20px; font-size: 1.1em; line-height: 1.6;">
-          ${result.overview.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+      <div class="product-description-ai" style="font-family: inherit; color: #333;">
+        <div class="overview" style="margin-bottom: 24px; line-height: 1.6;">
+          <strong style="font-size: 1.25em; display: block; margin-bottom: 12px;">Overview</strong>
+          ${result.overview.split('\n').filter(p => p.trim()).map(p => `<p style="margin-bottom: 12px;">${p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`).join('')}
         </div>
         
         ${sectionsHtml}
         
-        <h3 style="margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 4px;">Key Features:</h3>
+        <br/><br/>
+        <strong style="font-size: 1.25em; display: block; margin-bottom: 12px;">Features:</strong>
         <ul style="padding-left: 20px;">
           ${result.features.map(f => `
             <li style="margin-bottom: 8px; line-height: 1.5;">
@@ -412,7 +414,10 @@ function App() {
                     <div className="result-field">
                       <div className="field-label">Overview</div>
                       <div className="markdown-body">
-                        <ReactMarkdown>{result.overview}</ReactMarkdown>
+                        <strong>Overview</strong>
+                        <div style={{ marginTop: '12px' }}>
+                          <ReactMarkdown>{result.overview}</ReactMarkdown>
+                        </div>
                       </div>
                     </div>
 
@@ -425,9 +430,10 @@ function App() {
                       </div>
                     ))}
 
-                    <div className="result-field">
+                    <div className="result-field" style={{ marginTop: '24px' }}>
                       <div className="field-label">Features</div>
-                      <ul>
+                      <strong>Features:</strong>
+                      <ul style={{ marginTop: '12px' }}>
                         {result.features?.map((f, i) => (
                           <li key={i} className="markdown-body">
                             <ReactMarkdown>{f}</ReactMarkdown>
