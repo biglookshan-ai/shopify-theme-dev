@@ -272,15 +272,20 @@ function App() {
       <header className="app-header">
         <div className="header-left">
           <button onClick={() => setShowMobileSidebar(true)} className="sidebar-toggle">
-            <Menu size={24} />
+            <Menu size={20} />
           </button>
-          <h1 className="header-title">
-            Shopify <span className="text-gradient">MiniMax AI</span>
-          </h1>
+          <div className="brand-section" style={{ marginBottom: 0 }}>
+             <div className="brand-icon" style={{ width: '32px', height: '32px' }}>
+                <Camera color="white" size={16} />
+             </div>
+             <h1 className="header-title">
+               CineGear <span className="text-gradient">MiniMax AI</span>
+             </h1>
+          </div>
         </div>
         <div className="engine-status">
-          <span className="status-dot" style={{ background: isGenerating ? 'var(--accent-color)' : 'var(--success-color, #10b981)' }} />
-          {engineStatus}
+          <span className="status-dot" style={{ background: isGenerating ? 'var(--accent-primary)' : '#10b981', boxShadow: isGenerating ? '0 0 10px var(--accent-primary)' : 'none' }} />
+          Engine: {engineStatus}
         </div>
       </header>
 
@@ -289,16 +294,6 @@ function App() {
       <div className="main-layout">
         <div className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
           <aside className="sidebar">
-            <div className="brand-section">
-              <div className="brand-icon">
-                <Camera color="white" size={20} />
-              </div>
-              <div className="brand-text">
-                <h1>Product Content <div className="text-gradient">Generator</div></h1>
-                <span>By CineGearPro</span>
-              </div>
-            </div>
-
             <button onClick={startNew} className="new-btn">
               <Sparkles size={16} /> New Description
             </button>
@@ -306,31 +301,19 @@ function App() {
             <div className="history-label">History Vault</div>
             <div className="history-list">
               {history.length === 0 ? (
-                <p className="no-history">No history yet.</p>
+                <p className="no-history" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '20px' }}>No history yet.</p>
               ) : (
                 history.map(prod => (
                   <div key={prod.id} className="history-group">
                     <div className={`history-item ${activeHistoryId === prod.id ? 'active' : ''}`} onClick={() => loadHistoryItem(prod.id, prod.versions[0].id)}>
                       <div className="history-header">
                         <div className="history-title">{prod.productName}</div>
-                        <button onClick={(e) => deleteHistoryProduct(e, prod.id)} className="delete-btn"><Trash2 size={14} /></button>
+                        <button onClick={(e) => deleteHistoryProduct(e, prod.id)} className="delete-btn" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Trash2 size={12} /></button>
                       </div>
                       <div className="history-meta">
-                        <Clock size={12} /> {new Date(prod.lastUpdated).toLocaleDateString()} | {prod.versions.length} ver
+                        <Clock size={11} /> {new Date(prod.lastUpdated).toLocaleDateString()}
                       </div>
                     </div>
-                    {activeHistoryId === prod.id && prod.versions.length > 1 && (
-                      <div className="version-list">
-                        {prod.versions.map((ver, idx) => (
-                          <div key={ver.id} className="version-item" onClick={() => loadHistoryItem(prod.id, ver.id)}>
-                            <div className={activeVersionId === ver.id ? 'active-ver' : ''}>
-                              <ChevronRight size={12} /> Version {prod.versions.length - idx}
-                            </div>
-                            <button onClick={(e) => deleteHistoryVersion(e, prod.id, ver.id)} className="delete-btn-sm"><Trash2 size={12} /></button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 ))
               )}
@@ -338,119 +321,122 @@ function App() {
           </aside>
         </div>
 
-        <div className="content-panel">
-          <main className="main-container">
-            <section className="input-section">
-              <div className="glass-panel input-card">
-                <label><Camera size={20} color="var(--accent-primary)" /> Product Name</label>
-                <input type="text" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. Arri Alexa 35" />
-              </div>
-
-              <div className="glass-panel input-card">
-                <label><Video size={20} color="var(--accent-primary)" /> Materials & Specs</label>
-                <textarea value={materials} onChange={(e) => setMaterials(e.target.value)} placeholder="Paste technical specifications or product details here..." />
-                
-                <div className="file-upload">
-                  <input type="file" multiple onChange={handleFileUpload} accept="image/*,.pdf,.doc,.docx,.txt" />
-                  <Sparkles size={24} color="var(--accent-primary)" style={{ marginBottom: '12px' }} />
-                  <p>Drop product images or spec sheets here (max 20MB)</p>
+        <div className="pane-container">
+          {/* Column 2: Draft Workspace */}
+          <div className="pane workspace-pane">
+            <div className="pane-header">
+              <h2 className="pane-title">Draft Workspace</h2>
+              <p className="pane-subtitle">Fill in the details. MiniMax will synthesize and format everything into perfect British English.</p>
+            </div>
+            
+            <div className="pane-content">
+              <div className="workspace-stack">
+                <div className="glass-panel input-card">
+                  <label><Camera size={16} /> Product Name *</label>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>A short identifier for your history list.</p>
+                  <input type="text" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. Arri Alexa 35, DZOFILM Catta Zoom..." />
                 </div>
 
-                {files.length > 0 && (
-                  <div className="file-list" style={{ marginTop: '20px' }}>
-                    {files.map((file, idx) => (
-                      <div key={idx} className="file-item" style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '0.85rem' }}>{file.name}</span>
-                        <button onClick={() => removeFile(idx)} style={{ background: 'none', border: 'none', color: 'var(--error)', cursor: 'pointer' }}>×</button>
-                      </div>
-                    ))}
+                <div className="glass-panel input-card">
+                  <label><Video size={16} /> Product Materials *</label>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste your raw specs, Chinese drafts, or feature lists here.</p>
+                  <textarea value={materials} onChange={(e) => setMaterials(e.target.value)} placeholder="e.g. Full-frame cinema camera, 8K 60fps RAW internal recording, 17 stops dynamic range..." />
+                  
+                  <div className="file-upload">
+                    <input type="file" multiple onChange={handleFileUpload} accept="image/*,.pdf,.doc,.docx,.txt" />
+                    <p>Drag & drop or tap to attach Files/Images (max 20MB)</p>
                   </div>
-                )}
-              </div>
-
-              {error && <div className="error-alert" style={{ background: 'rgba(255,77,77,0.1)', border: '1px solid var(--error)', padding: '16px', borderRadius: '12px', color: 'var(--error)', display: 'flex', gap: '12px' }}><AlertCircle size={20} /><span>{error}</span></div>}
-
-              <div className="action-group" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '12px' }}>
-                <div className="mode-selector">
-                  <button 
-                    onClick={() => setGenMode('concise')} 
-                    className={`mode-btn ${genMode === 'concise' ? 'active' : ''}`}
-                  >
-                    Concise Summary
-                  </button>
-                  <button 
-                    onClick={() => setGenMode('detailed')} 
-                    className={`mode-btn ${genMode === 'detailed' ? 'active' : ''}`}
-                  >
-                    Detailed Analysis
-                  </button>
                 </div>
 
-                <button onClick={handleGenerate} disabled={isGenerating} className="generate-btn">
-                  {isGenerating ? 'Synthesizing Intelligence...' : `Execute ${genMode === 'detailed' ? 'Detailed' : 'Concise'} Generation`}
-                </button>
-              </div>
-            </section>
-
-            <section className="output-section">
-              <div className="glass-panel output-card">
-                <div className="output-header">
-                  <h3><Wand2 color="var(--accent-primary)" /> Generation Result</h3>
-                  {result && (
-                    <div className="action-btns">
-                      {isExtension && (
-                        <button onClick={applyToShopify} className="apply-btn">
-                          Apply to Shopify
-                        </button>
-                      )}
-                      <button onClick={saveToHistory} className="save-btn">Save to Vault</button>
-                    </div>
-                  )}
+                <div className="glass-panel input-card">
+                    <label><RefreshCw size={16} /> Reference Links</label>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste URLs (official site, news coverage, competitor products).</p>
+                    <textarea 
+                        style={{ minHeight: '80px' }}
+                        value={references} 
+                        onChange={(e) => setReferences(e.target.value)} 
+                        placeholder="e.g. https://www.arri.com/..." 
+                    />
                 </div>
 
-                {result ? (
-                  <div className="result-content">
-                    <div className="result-field">
-                      <div className="field-label">Title</div>
-                      <h2 className="field-value">{result.title}</h2>
+                {error && <div className="error-alert" style={{ color: 'var(--error)', fontSize: '0.85rem', display: 'flex', gap: '8px', alignItems: 'center' }}><AlertCircle size={16} /> {error}</div>}
+
+                <div className="master-actions">
+                  <div className="mode-selector">
+                    <button onClick={() => setGenMode('concise')} className={`mode-btn ${genMode === 'concise' ? 'active' : ''}`}>
+                      Concise Summary
+                    </button>
+                    <button onClick={() => setGenMode('detailed')} className={`mode-btn ${genMode === 'detailed' ? 'active' : ''}`}>
+                      Detailed Analysis
+                    </button>
+                  </div>
+
+                  <button onClick={handleGenerate} disabled={isGenerating} className="generate-btn">
+                    {isGenerating ? 'Synthesizing...' : 'Generate Description'}
+                    {!isGenerating && <Sparkles size={18} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Column 3: Output Result */}
+          <div className="pane result-pane">
+            <div className="pane-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 className="pane-title"><ArrowRight size={20} color="var(--accent-primary)" /> Output Result</h2>
+              </div>
+              {result && (
+                  <div className="result-actions">
+                    {isExtension && <button onClick={applyToShopify} className="result-btn">Apply to Shopify</button>}
+                    <button onClick={saveToHistory} className="result-btn save-vault-btn">Save to Vault</button>
+                  </div>
+              )}
+            </div>
+
+            <div className="pane-content">
+              {result ? (
+                <div className="result-viewer">
+                  <div className="result-field">
+                    <span className="field-label">Title</span>
+                    <h2 className="field-value">{result.title}</h2>
+                  </div>
+
+                  <div className="result-field">
+                    <span className="field-label">Overview</span>
+                    <div className="markdown-body">
+                      <ReactMarkdown>{result.overview}</ReactMarkdown>
                     </div>
-                    
-                    <div className="result-field">
-                      <div className="field-label">Overview</div>
+                  </div>
+
+                  {result.sections && result.sections.map((section, idx) => (
+                    <div key={idx} className="result-field">
+                      <span className="field-label">{section.heading}</span>
                       <div className="markdown-body">
-                        <ReactMarkdown>{result.overview}</ReactMarkdown>
+                        <ReactMarkdown>{section.content}</ReactMarkdown>
                       </div>
                     </div>
+                  ))}
 
-                    {result.sections && result.sections.map((section, idx) => (
-                      <div key={idx} className="result-field">
-                        <div className="field-label">{section.heading}</div>
-                        <div className="markdown-body">
-                          <ReactMarkdown>{section.content}</ReactMarkdown>
-                        </div>
-                      </div>
-                    ))}
-
-                    <div className="result-field">
-                      <div className="field-label">Key Features</div>
-                      <ul className="markdown-body">
-                        {result.features?.map((f, i) => (
-                          <li key={i}>
-                            <ReactMarkdown>{f}</ReactMarkdown>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                  <div className="result-field">
+                    <span className="field-label">Key Features</span>
+                    <ul className="markdown-body">
+                      {result.features?.map((f, i) => (
+                        <li key={i}>
+                          <ReactMarkdown>{f}</ReactMarkdown>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                ) : (
-                  <div className="empty-state">
-                    <Sparkles size={64} color="var(--accent-primary)" />
-                    <p style={{ fontSize: '1rem', letterSpacing: '1px' }}>STANDING BY FOR INPUT...</p>
-                  </div>
-                )}
-              </div>
-            </section>
-          </main>
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <Sparkles size={48} />
+                  <p>Your polished British English description will appear here.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
