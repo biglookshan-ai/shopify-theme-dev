@@ -152,3 +152,67 @@ async function generateWithMiniMax(materials, references, files, mode, customIns
     throw new Error("AI output format error. Please try again.");
   }
 }
+
+/**
+ * Translates a generated result into Professional Chinese
+ */
+export async function translateResultToZH(resultJson, onEngineStatus) {
+  if (!MINIMAX_KEY) throw new Error("MiniMax API Key is missing.");
+  if (onEngineStatus) onEngineStatus("Translating to ZH...");
+
+  const systemPrompt = `
+# Role
+You are a professional Translator specializing in Cinema, Video, and Photography equipment.
+
+# Task
+Translate the provided technical product description from English into Professional Simplified Chinese.
+
+# Rules
+- Use accurate technical terms used in the film industry.
+- Maintain the EXACT SAME JSON structure.
+- TRANSLATE the content of "title", "overview", and the "heading" & "content" inside "sections", and each string in "features".
+- Maintain all Markdown bolding (**text**) precisely as they appear in the original.
+- Do NOT add any conversational text. ONLY output the JSON.
+
+# Output Format (JSON)
+{
+  "title": "...",
+  "overview": "...",
+  "sections": [{"heading": "...", "content": "..."}],
+  "features": ["..."]
+}
+`;
+
+  const userContent = `Original English Content (JSON):\n${JSON.stringify(resultJson, null, 2)}\n\nTranslate to Simplified Chinese. JSON ONLY.`;
+
+  try {
+    const response = await fetch(MINIMAX_BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${MINIMAX_KEY}`
+      },
+      body: JSON.stringify({
+        model: MINIMAX_MODEL,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userContent }
+        ],
+        temperature: 0.1,
+        max_tokens: 3000
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error?.message || "Translation failed");
+
+    let text = data.choices[0].message.content.trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI failed to return valid JSON translation.");
+    
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("Translation Error:", error);
+    throw new Error(`Translation failed: ${error.message}`);
+  }
+}

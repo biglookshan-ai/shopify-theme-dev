@@ -344,6 +344,15 @@ textarea { min-height: 120px; line-height: 1.6; }
   .workspace-stack { max-width: 100%; }
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
 /* History Vault - Card Styling */
 .history-group-card {
   margin-bottom: 16px;

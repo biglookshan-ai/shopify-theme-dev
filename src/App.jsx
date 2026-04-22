@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Settings, Key, Wand2, ArrowRight, Video, Sparkles, AlertCircle, Save, RefreshCw, Clock, ChevronRight, Trash2, Menu, FileText, X, Image } from 'lucide-react';
-import { generateDescription } from './lib/ai';
+import { generateDescription, translateResultToZH } from './lib/ai';
 import { db } from './lib/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc, query, orderBy, onSnapshot } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
@@ -69,7 +69,23 @@ const TRANSLATIONS = {
     errorEmptyName: "产品名称为必填项。",
     errorNoSource: "请至少提供一种来源：链接、资料或图片文件。",
     errorSaveName: "保存到库之前请先输入产品名称。",
-    emptyState: "生成的英式英语描述将在这里显示。"
+    emptyState: "生成的英式英语描述将在这里显示。",
+    viewTranslation: "查看翻译",
+    viewOriginal: "查看原文",
+    translating: "正在翻译..."
+  }
+};
+
+const EN_ZH_UI = {
+  en: {
+    viewTranslation: "View Translation",
+    viewOriginal: "View Original",
+    translating: "Translating..."
+  },
+  zh: {
+    viewTranslation: "查看翻译",
+    viewOriginal: "查看原文",
+    translating: "正在翻译..."
   }
 };
 
@@ -100,7 +116,10 @@ function App() {
 
   // Execution States
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
   const [result, setResult] = useState(null);
+  const [translationResult, setTranslationResult] = useState(null);
+  const [isViewingTranslation, setIsViewingTranslation] = useState(false);
   const [error, setError] = useState('');
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [saveFeedback, setSaveFeedback] = useState(false);
@@ -241,6 +260,8 @@ function App() {
 
     setError('');
     setIsGenerating(true);
+    setTranslationResult(null);
+    setIsViewingTranslation(false);
 
     try {
       const processedFiles = [];
@@ -328,6 +349,8 @@ function App() {
     setActiveVersionId(ver.id);
     setProductName(prod.productName);
     setResult(ver.result);
+    setTranslationResult(null);
+    setIsViewingTranslation(false);
     setShowMobileSidebar(false);
   };
 
@@ -374,12 +397,43 @@ function App() {
     setActiveHistoryId(null);
     setActiveVersionId(null);
     setResult(null);
+    setTranslationResult(null);
+    setIsViewingTranslation(false);
     setProductName('');
     setMaterials('');
     setReferences('');
     setCustomInstructions('');
     setFiles([]);
   };
+
+  const handleToggleTranslation = async () => {
+    if (!result) return;
+    
+    if (isViewingTranslation) {
+      setIsViewingTranslation(false);
+      return;
+    }
+
+    if (translationResult) {
+      setIsViewingTranslation(true);
+      return;
+    }
+
+    try {
+      setIsTranslating(true);
+      const translated = await translateResultToZH(result, setEngineStatus);
+      setTranslationResult(translated);
+      setIsViewingTranslation(true);
+      setEngineStatus('Standby');
+    } catch (err) {
+      setError(`Translation failed: ${err.message}`);
+      setEngineStatus('Error');
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const displayResult = isViewingTranslation && translationResult ? translationResult : result;
 
   return (
     <div className="app-container">
@@ -594,6 +648,22 @@ function App() {
               {result && (
                   <div className="result-actions" style={{ display: 'flex', gap: '8px' }}>
                     <button 
+                      onClick={handleToggleTranslation} 
+                      disabled={isTranslating}
+                      className={`result-btn trans-toggle-btn ${isViewingTranslation ? 'active' : ''}`}
+                      style={{
+                        background: isViewingTranslation ? 'rgba(255,179,0,0.8)' : 'rgba(255,255,255,0.05)',
+                        color: isViewingTranslation ? 'black' : 'var(--text-secondary)',
+                        border: '1px solid var(--border-color)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <RefreshCw size={12} className={isTranslating ? 'spin-icon' : ''} />
+                      {isTranslating ? EN_ZH_UI[lang].translating : (isViewingTranslation ? EN_ZH_UI[lang].viewOriginal : EN_ZH_UI[lang].viewTranslation)}
+                    </button>
+                    <button 
                       onClick={copyToClipboard} 
                       className="result-btn" 
                       style={{ 
@@ -622,21 +692,36 @@ function App() {
             </div>
 
             <div className="pane-content">
-              {result ? (
+              {displayResult ? (
                 <div className="result-viewer">
+                  {isViewingTranslation && (
+                    <div className="translation-badge" style={{ 
+                      fontSize: '0.65rem', 
+                      background: 'var(--accent-primary)', 
+                      color: 'black', 
+                      padding: '2px 8px', 
+                      borderRadius: '4px', 
+                      display: 'inline-block',
+                      fontWeight: 700,
+                      marginBottom: '16px',
+                      textTransform: 'uppercase'
+                    }}>
+                      Translation Mode / 翻译模式
+                    </div>
+                  )}
                   <div className="result-field">
-                    <span className="field-label">Title</span>
-                    <h2 className="field-value">{result.title}</h2>
+                    <span className="field-label">{lang === 'zh' ? '标题' : 'Title'}</span>
+                    <h2 className="field-value">{displayResult.title}</h2>
                   </div>
 
                   <div className="result-field">
-                    <span className="field-label">Overview</span>
+                    <span className="field-label">{lang === 'zh' ? '概述' : 'Overview'}</span>
                     <div className="markdown-body">
-                      <ReactMarkdown>{result.overview}</ReactMarkdown>
+                      <ReactMarkdown>{displayResult.overview}</ReactMarkdown>
                     </div>
                   </div>
 
-                  {result.sections && result.sections.map((section, idx) => (
+                  {displayResult.sections && displayResult.sections.map((section, idx) => (
                     <div key={idx} className="result-field">
                       <span className="field-label">{section.heading}</span>
                       <div className="markdown-body">
@@ -646,9 +731,9 @@ function App() {
                   ))}
 
                     <div className="result-field">
-                      <span className="field-label">Features:</span>
+                      <span className="field-label">{lang === 'zh' ? '核心功能' : 'Features'}:</span>
                     <ul className="markdown-body">
-                      {result.features?.map((f, i) => (
+                      {displayResult.features?.map((f, i) => (
                         <li key={i}>
                           <ReactMarkdown>{f}</ReactMarkdown>
                         </li>
