@@ -693,9 +693,7 @@ function App() {
                         transition: 'all 0.3s'
                       }}
                     >
-                      {copyFeedback ? t('copied') : t('copyHtml')}
                     </button>
-                    {isExtension && <button onClick={applyToShopify} className="result-btn">{t('applyShopify')}</button>}
                     <button 
                       onClick={saveToHistory} 
                       className={`result-btn save-vault-btn ${saveFeedback ? 'saved' : ''}`}

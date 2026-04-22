@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "Shopify AI Assistant",
+  "version": "1.0.0",
+  "description": "Generate product descriptions for Shopify with AI fallback support.",
+  "permissions": [
+    "sidePanel",
+    "contextMenus",
+    "scripting",
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://admin.shopify.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.siliconflow.cn/*",
+    "https://*.firebaseio.com/*",
+    "https://*.googleapis.com/*"
+  ],
+  "action": {
+    "default_title": "Open Side Panel"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "background": {
+    "service_worker": "service-worker-loader.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "assets/content.js-n9U8qgn-.js"
+      ],
+      "matches": [
+        "https://admin.shopify.com/*"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "https://admin.shopify.com/*"
+      ],
+      "resources": [
+        "assets/content.js-n9U8qgn-.js"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
+}
