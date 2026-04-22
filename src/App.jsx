@@ -439,7 +439,7 @@ function App() {
     <div className="app-container">
       <header className="app-header">
         <div className="header-left">
-          <button className="mobile-menu-btn" onClick={() => setShowMobileSidebar(true)}>
+          <button className="mobile-menu-btn" onClick={() => setShowMobileSidebar(!showMobileSidebar)}>
             <Menu size={20} />
           </button>
           <div className="header-brand">
