@@ -297,15 +297,12 @@ function App() {
     <div className="app-container">
       <header className="app-header">
         <div className="header-left">
-          <button onClick={() => setShowMobileSidebar(true)} className="sidebar-toggle">
-            <Menu size={20} />
-          </button>
           <div className="brand-section" style={{ marginBottom: 0 }}>
              <div className="brand-icon" style={{ width: '32px', height: '32px' }}>
                 <Camera color="white" size={16} />
              </div>
              <h1 className="header-title">
-               CineGear <span className="text-gradient">MiniMax AI</span>
+               CineGear <span className="text-gradient">描述生成器</span>
              </h1>
           </div>
         </div>
@@ -352,7 +349,7 @@ function App() {
           <div className="pane workspace-pane">
             <div className="pane-header">
               <h2 className="pane-title">Draft Workspace</h2>
-              <p className="pane-subtitle">Fill in the details. MiniMax will synthesize and format everything into perfect British English.</p>
+              <p className="pane-subtitle">Fill in the details. AI will synthesize and format everything into perfect British English.</p>
             </div>
             
             <div className="pane-content">
