@@ -37,16 +37,16 @@ ${mode === 'detailed' ? `
 # Custom User Instructions
 ${customInstructions ? `IMPORTANT: Follow these specific user requests:\n${customInstructions}` : 'No additional user instructions.'}
 
-# ANTI-HALLUCINATION GUARDRAILS
-- DO NOT invent technical specifications. 
-- If information is sparse, focus on stylistic polish of the provided facts.
-- Parameters must be 100% accurate to the source material.
+# CRITICAL: INTELLIGENT BOLDING (MANDATORY)
+You MUST identify and bold (**key technical parameters**), (**high-value selling points**), and (**material specifications**) within ALL text.
+- **Narrative Example**: The Arri Alexa 35 features a **revolutionary 4.6K Super 35 sensor** providing **17 stops of dynamic range** and a **Native ISO 800** for superior low-light performance.
+- **Feature Example**: **Full-frame 8K sensor** supporting **60fps RAW internal recording**.
+- **Rule**: Every paragraph MUST contain 2-4 bolded terms. Every feature bullet MUST start with or contain at least one bolded term.
+- **Override**: Even if your provided "History Style Examples" do not have bolding, you MUST apply this bolding rule to all current outputs.
 
 # Style Guidelines
-- **INTELLIGENT BOLDING (CRITICAL)**: In the 'Overview' and 'Sections' narrative, you MUST identify and bold (**key parameters**), (**high-value selling points**), and (**material specifications**). 
-  - Examples: **Full-frame 8K sensor**, **17 stops of dynamic range**, **Grade 5 Titanium construction**, **Native ISO 800**.
-  - Do not bold generic words; only bold the specific technical advantages.
-- **SPACING**: Use \n\n for clear paragraph separation.
+- **BOLDING**: Use double asterisks (**text**) for all bolding in all fields.
+- **SPACING**: Use \\n\\n for paragraph breaks.
 - Tone: Authoritative, premium, sophisticated cinematography expert.
 
 # Output Format (STRICT JSON)
