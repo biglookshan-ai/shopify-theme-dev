@@ -157,8 +157,8 @@ function App() {
       setError('Product Name is required.');
       return;
     }
-    if (!materials.trim() && files.length === 0) {
-      setError('Product materials or files are required.');
+    if (!materials.trim() && !references.trim() && files.length === 0) {
+      setError('Please provide at least one source: Links, Materials, or Images.');
       return;
     }
 
@@ -364,7 +364,18 @@ function App() {
                 </div>
 
                 <div className="glass-panel input-card">
-                  <label><Video size={16} /> Product Materials *</label>
+                    <label><RefreshCw size={16} /> Reference Links</label>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste URLs (e.g. YouTube, Bilibili, Official Specs).</p>
+                    <textarea 
+                        style={{ minHeight: '60px' }}
+                        value={references} 
+                        onChange={(e) => setReferences(e.target.value)} 
+                        placeholder="e.g. https://www.arri.com/..." 
+                    />
+                </div>
+
+                <div className="glass-panel input-card">
+                  <label><Video size={16} /> Product Materials</label>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste your raw specs, Chinese drafts, or feature lists here.</p>
                   <textarea value={materials} onChange={(e) => setMaterials(e.target.value)} placeholder="e.g. Full-frame cinema camera, 8K 60fps RAW internal recording, 17 stops dynamic range..." />
                   
@@ -418,17 +429,6 @@ function App() {
                       ))}
                     </div>
                   )}
-                </div>
-
-                <div className="glass-panel input-card">
-                    <label><RefreshCw size={16} /> Reference Links</label>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste URLs (e.g. YouTube, Bilibili, Official Specs).</p>
-                    <textarea 
-                        style={{ minHeight: '60px' }}
-                        value={references} 
-                        onChange={(e) => setReferences(e.target.value)} 
-                        placeholder="e.g. https://www.arri.com/..." 
-                    />
                 </div>
 
                 <div className="glass-panel input-card" style={{ borderColor: 'var(--accent-primary)', opacity: 0.9 }}>
