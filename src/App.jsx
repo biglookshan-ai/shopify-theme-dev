@@ -97,7 +97,6 @@ function App() {
           });
         }
       });
-    }
   };
 
   const copyToClipboard = async () => {
