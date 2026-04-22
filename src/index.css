@@ -283,7 +283,7 @@ textarea { min-height: 120px; line-height: 1.6; }
 
 /* Result Fields */
 .result-field { margin-bottom: 24px; padding-bottom: 0; border-bottom: none; }
-.field-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary); letter-spacing: 1.5px; margin-bottom: 12px; display: block; opacity: 0.9; }
+.field-label { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; display: block; }
 .field-value { font-size: 1.5rem; font-weight: 800; color: white; line-height: 1.2; }
 
 .markdown-body { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.8; }

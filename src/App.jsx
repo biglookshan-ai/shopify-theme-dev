@@ -57,14 +57,14 @@ function App() {
 
     const descriptionHtml = `
       <div class="product-description-ai">
-        <p><strong><span style="color: #FFB300;">Overview</span></strong></p>
+        <p><strong>Overview</strong></p>
         ${result.overview.split('\n').filter(p => p.trim()).map(p => `<p>${p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`).join('')}
         <br/>
         
         ${sectionsHtml}
         
         <br/><br/>
-        <p><strong><span style="color: #FFB300;">Features:</span></strong></p>
+        <p><strong>Features:</strong></p>
         <ul>
           ${result.features.map(f => `
             <li style="margin-bottom: 8px;">
@@ -400,7 +400,7 @@ function App() {
                   </div>
 
                   <div className="result-field">
-                    <span className="field-label" style={{ color: 'var(--accent-primary)' }}>Overview</span>
+                    <span className="field-label">Overview</span>
                     <div className="markdown-body">
                       <ReactMarkdown>{result.overview}</ReactMarkdown>
                     </div>
@@ -415,8 +415,8 @@ function App() {
                     </div>
                   ))}
 
-                  <div className="result-field">
-                    <span className="field-label" style={{ color: 'var(--accent-primary)' }}>Features:</span>
+                    <div className="result-field">
+                      <span className="field-label">Features:</span>
                     <ul className="markdown-body">
                       {result.features?.map((f, i) => (
                         <li key={i}>
