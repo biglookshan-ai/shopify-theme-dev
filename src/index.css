@@ -152,7 +152,7 @@ body {
 
 .new-btn:hover { border-color: var(--accent-primary); background: rgba(255,179,0,0.05); }
 
-.history-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 16px; }
+.history-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 16px; }
 .history-list { flex: 1; overflow-y: auto; padding-right: 4px; }
 
 /* Workspace & Result - Columns 2 & 3 */
