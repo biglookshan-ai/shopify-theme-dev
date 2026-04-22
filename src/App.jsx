@@ -467,7 +467,12 @@ function App() {
       <div className="main-layout">
         <div className={`sidebar-panel ${showSidebar ? 'open' : ''}`}>
           <aside className="sidebar">
-            <div className="history-label">{t('historyVault')}</div>
+            <div className="sidebar-header-row">
+              <div className="history-label" style={{ marginBottom: 0 }}>{t('historyVault')}</div>
+              <button className="sidebar-close-btn" onClick={() => setShowSidebar(false)}>
+                <X size={18} />
+              </button>
+            </div>
             <div className="history-list">
               {history.length === 0 ? (
                 <p className="no-history" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '20px' }}>{t('noHistory')}</p>
