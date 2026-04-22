@@ -340,67 +340,70 @@ function App() {
 
         <div className="content-panel">
           <main className="main-container">
-            <div className="input-section">
+            <section className="input-section">
               <div className="glass-panel input-card">
-                <label><Camera size={18} color="var(--accent-color)" /> Product Name</label>
+                <label><Camera size={20} color="var(--accent-primary)" /> Product Name</label>
                 <input type="text" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. Arri Alexa 35" />
               </div>
 
               <div className="glass-panel input-card">
-                <label><Video size={18} color="var(--accent-color)" /> Materials</label>
-                <textarea value={materials} onChange={(e) => setMaterials(e.target.value)} placeholder="Paste specs here..." />
+                <label><Video size={20} color="var(--accent-primary)" /> Materials & Specs</label>
+                <textarea value={materials} onChange={(e) => setMaterials(e.target.value)} placeholder="Paste technical specifications or product details here..." />
                 
                 <div className="file-upload">
                   <input type="file" multiple onChange={handleFileUpload} accept="image/*,.pdf,.doc,.docx,.txt" />
-                  <p>Drop files here (max 20MB)</p>
+                  <Sparkles size={24} color="var(--accent-primary)" style={{ marginBottom: '12px' }} />
+                  <p>Drop product images or spec sheets here (max 20MB)</p>
                 </div>
 
                 {files.length > 0 && (
-                  <div className="file-list">
+                  <div className="file-list" style={{ marginTop: '20px' }}>
                     {files.map((file, idx) => (
-                      <div key={idx} className="file-item">
-                        <span>{file.name}</span>
-                        <button onClick={() => removeFile(idx)}>×</button>
+                      <div key={idx} className="file-item" style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '0.85rem' }}>{file.name}</span>
+                        <button onClick={() => removeFile(idx)} style={{ background: 'none', border: 'none', color: 'var(--error)', cursor: 'pointer' }}>×</button>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
-              {error && <div className="error-alert"><AlertCircle size={20} /><span>{error}</span></div>}
+              {error && <div className="error-alert" style={{ background: 'rgba(255,77,77,0.1)', border: '1px solid var(--error)', padding: '16px', borderRadius: '12px', color: 'var(--error)', display: 'flex', gap: '12px' }}><AlertCircle size={20} /><span>{error}</span></div>}
 
-              <div className="mode-selector">
-                <button 
-                  onClick={() => setGenMode('concise')} 
-                  className={`mode-btn ${genMode === 'concise' ? 'active' : ''}`}
-                >
-                  Concise
-                </button>
-                <button 
-                  onClick={() => setGenMode('detailed')} 
-                  className={`mode-btn ${genMode === 'detailed' ? 'active' : ''}`}
-                >
-                  Detailed
+              <div className="action-group" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '12px' }}>
+                <div className="mode-selector">
+                  <button 
+                    onClick={() => setGenMode('concise')} 
+                    className={`mode-btn ${genMode === 'concise' ? 'active' : ''}`}
+                  >
+                    Concise Summary
+                  </button>
+                  <button 
+                    onClick={() => setGenMode('detailed')} 
+                    className={`mode-btn ${genMode === 'detailed' ? 'active' : ''}`}
+                  >
+                    Detailed Analysis
+                  </button>
+                </div>
+
+                <button onClick={handleGenerate} disabled={isGenerating} className="generate-btn">
+                  {isGenerating ? 'Synthesizing Intelligence...' : `Execute ${genMode === 'detailed' ? 'Detailed' : 'Concise'} Generation`}
                 </button>
               </div>
+            </section>
 
-              <button onClick={handleGenerate} disabled={isGenerating} className="generate-btn">
-                {isGenerating ? 'Synthesizing...' : `Generate ${genMode === 'detailed' ? 'Detailed' : 'Concise'} Description`}
-              </button>
-            </div>
-
-            <div className="output-section">
+            <section className="output-section">
               <div className="glass-panel output-card">
                 <div className="output-header">
-                  <h3><ArrowRight color="var(--accent-color)" /> Result</h3>
+                  <h3><Wand2 color="var(--accent-primary)" /> Generation Result</h3>
                   {result && (
                     <div className="action-btns">
                       {isExtension && (
                         <button onClick={applyToShopify} className="apply-btn">
-                          <ArrowRight size={14} /> Apply to Shopify
+                          Apply to Shopify
                         </button>
                       )}
-                      <button onClick={saveToHistory} className="save-btn"><Save size={14} /> Save to Vault</button>
+                      <button onClick={saveToHistory} className="save-btn">Save to Vault</button>
                     </div>
                   )}
                 </div>
@@ -411,6 +414,7 @@ function App() {
                       <div className="field-label">Title</div>
                       <h2 className="field-value">{result.title}</h2>
                     </div>
+                    
                     <div className="result-field">
                       <div className="field-label">Overview</div>
                       <div className="markdown-body">
@@ -427,11 +431,11 @@ function App() {
                       </div>
                     ))}
 
-                    <div className="result-field" style={{ marginTop: '24px' }}>
-                      <div className="field-label">Features</div>
+                    <div className="result-field">
+                      <div className="field-label">Key Features</div>
                       <ul className="markdown-body">
                         {result.features?.map((f, i) => (
-                          <li key={i} className="markdown-body">
+                          <li key={i}>
                             <ReactMarkdown>{f}</ReactMarkdown>
                           </li>
                         ))}
@@ -440,12 +444,12 @@ function App() {
                   </div>
                 ) : (
                   <div className="empty-state">
-                    <Wand2 size={48} />
-                    <p>AI description will appear here.</p>
+                    <Sparkles size={64} color="var(--accent-primary)" />
+                    <p style={{ fontSize: '1rem', letterSpacing: '1px' }}>STANDING BY FOR INPUT...</p>
                   </div>
                 )}
               </div>
-            </div>
+            </section>
           </main>
         </div>
       </div>
