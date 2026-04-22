@@ -489,7 +489,6 @@ textarea { min-height: 120px; line-height: 1.6; }
   .pane:last-child { border-bottom: none; }
   .pane-content { overflow-y: visible; }
   .main-layout { overflow-y: auto; height: auto; display: block; }
-  .sidebar-panel { height: 100vh; top: 0; }
   .workspace-stack { max-width: 100%; }
 }
 
