@@ -27,9 +27,10 @@ You MUST optimize the "title" field according to this hierarchy:
 - Example Input: "dzofilm 35-80mm"
 - Example Output: "DZOFILM Catta 35-80mm T2.9 Full-Frame Cinema Zoom Lens"
 
-# Flagging Optimization
-- If you significantly restructure or improve the "Product Name" provided by the user to follow the hierarchy above, you MUST set "title_optimized" to true.
-- If the user's input already follows the professional hierarchy perfectly, set "title_optimized" to false.
+# Flagging Optimization (CRITICAL)
+- Compare your final generated "title" with the "Product Name" provided in the prompt.
+- If the "title" is DIFFERENT in any way (added brand, added specs, improved casing), you MUST set "title_optimized" to true.
+- ONLY set "title_optimized" to false if you used the user's provided name exactly without any changes.
 
 # Structure Rules
 ${mode === 'detailed' ? `
@@ -182,7 +183,7 @@ Translate the provided technical product description from English into Professio
 - Use accurate technical terms used in the film industry.
 - Maintain the EXACT SAME JSON structure.
 - TRANSLATE the content of "title", "overview", and the "heading" & "content" inside "sections", and each string in "features".
-- PRESERVE the "title_optimized" boolean value as is.
+- PRESERVE the "title_optimized" boolean value as is. DO NOT CHANGE IT.
 - Maintain all Markdown bolding (**text**) precisely as they appear in the original.
 - Do NOT add any conversational text. ONLY output the JSON.
 

@@ -722,7 +722,7 @@ function App() {
                     <span className="field-label">{lang === 'zh' ? '标题' : 'Title'}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <h2 className="field-value" style={{ margin: 0 }}>{displayResult.title}</h2>
-                      {displayResult.title_optimized && (
+                      {Boolean(displayResult.title_optimized) && (
                         <div className="optimized-badge">
                           <Sparkles size={12} />
                           {lang === 'zh' ? '已优化' : 'Optimized'}
