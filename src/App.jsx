@@ -339,54 +339,41 @@ function App() {
                 <p className="no-history" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '20px' }}>No history yet.</p>
               ) : (
                 history.map(prod => (
-                  <div key={prod.id} className="history-group">
-                    <div className={`history-item ${activeHistoryId === prod.id ? 'active' : ''}`} onClick={() => loadHistoryItem(prod.id, prod.versions[0].id)}>
+                  <div key={prod.id} className={`history-group-card ${activeHistoryId === prod.id ? 'active' : ''}`}>
+                    <div className="history-item-main" onClick={() => loadHistoryItem(prod.id, prod.versions[0].id)}>
                       <div className="history-header">
                         <div className="history-title">{prod.productName}</div>
-                        <button onClick={(e) => deleteHistoryProduct(e, prod.id)} className="delete-btn" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Trash2 size={12} /></button>
+                        <button onClick={(e) => deleteHistoryProduct(e, prod.id)} className="delete-btn-ghost"><Trash2 size={12} /></button>
                       </div>
-                      <div className="history-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div className="history-meta-row">
+                        <div className="meta-left">
                           <Clock size={11} /> {new Date(prod.lastUpdated).toLocaleDateString()}
                         </div>
-                        <div className="version-count" style={{ fontSize: '0.7rem', opacity: 0.6 }}>
-                          {prod.versions?.length} {prod.versions?.length === 1 ? 'version' : 'versions'}
+                        <div className="meta-right">
+                          {prod.versions?.length} {prod.versions?.length === 1 ? 'ver' : 'vers'}
                         </div>
                       </div>
                     </div>
                     
                     {/* Version List for selected product */}
-                    {activeHistoryId === prod.id && prod.versions?.length > 0 && (
-                      <div className="version-child-list" style={{ marginLeft: '12px', borderLeft: '1px solid var(--border-color)', marginTop: '4px' }}>
+                    {activeHistoryId === prod.id && prod.versions?.length > 1 && (
+                      <div className="version-sub-list">
                         {prod.versions.map((ver, vIdx) => (
                           <div 
                             key={ver.id} 
-                            className={`history-ver-item ${activeVersionId === ver.id ? 'active' : ''}`}
+                            className={`history-ver-chip ${activeVersionId === ver.id ? 'active' : ''}`}
                             onClick={(e) => {
                               e.stopPropagation();
                               loadHistoryItem(prod.id, ver.id);
                             }}
-                            style={{
-                              padding: '6px 12px',
-                              fontSize: '0.75rem',
-                              cursor: 'pointer',
-                              color: activeVersionId === ver.id ? 'var(--accent-primary)' : 'var(--text-muted)',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              borderRadius: '4px',
-                              margin: '2px 0 2px 8px',
-                              background: activeVersionId === ver.id ? 'rgba(255,179,0,0.05)' : 'transparent'
-                            }}
                           >
-                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                              <ChevronRight size={10} style={{ opacity: 0.5 }} />
+                            <div className="ver-label">
+                              <ChevronRight size={10} className="ver-icon" />
                               <span>{ver.mode === 'concise' ? 'Concise' : 'Detailed'}</span>
                             </div>
                             <button 
                               onClick={(e) => deleteHistoryVersion(e, prod.id, ver.id)} 
-                              className="delete-ver-btn"
-                              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px', opacity: 0 }}
+                              className="delete-ver-btn-ghost"
                             >
                               <Trash2 size={10} />
                             </button>
