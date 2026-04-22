@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Settings, Key, Wand2, ArrowRight, Video, Sparkles, AlertCircle, Save, RefreshCw, Clock, ChevronRight, Trash2, Menu, FileText, X } from 'lucide-react';
+import { Camera, Settings, Key, Wand2, ArrowRight, Video, Sparkles, AlertCircle, Save, RefreshCw, Clock, ChevronRight, Trash2, Menu, FileText, X, Image } from 'lucide-react';
 import { generateDescription } from './lib/ai';
 import { db } from './lib/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc, query, orderBy, onSnapshot } from 'firebase/firestore';
@@ -382,8 +382,8 @@ function App() {
                       onChange={handleFileUpload} 
                       accept="image/*,.pdf,.doc,.docx,.txt" 
                     />
-                    <div className="upload-content">
-                      <Sparkles size={24} style={{ marginBottom: '10px', opacity: 0.5 }} />
+                    <div className="upload-content" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Image size={20} style={{ opacity: 0.7 }} />
                       <p>Drag & drop or tap to attach Files/Images (max 20MB)</p>
                     </div>
                   </div>
