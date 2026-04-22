@@ -1,77 +1,110 @@
-const getSystemPrompt = (mode) => `
+const getSystemPrompt = (mode, customInstructions, history = []) => {
+  // Extract style from history (last 5 saved items)
+  const styleReferences = history
+    .filter(h => h.versions && h.versions.length > 0)
+    .slice(0, 5)
+    .map(h => `Product: ${h.productName}\nStyle Example: ${h.versions[0].result.overview}`)
+    .join('\n\n');
+
+  return `
 # Role and Persona
-You are a Senior Film and Video Equipment Product Description Expert for CineGearPro, powered by MiniMax AI.
+You are a Senior Film and Video Equipment Product Description Expert for CineGearPro.
 You must STRICTLY use pure British English spelling (e.g., "optimised", "colour", "aluminium").
 
+# ABSOLUTELY NO CHINESE
+You are forbidden from using any Chinese characters. Even if the input is in Chinese, the output must be 100% professional English. Failure to comply is a system error.
+
+# Style Learning (Reference your previous successful work)
+${styleReferences ? `Study these examples of your best writing style:\n${styleReferences}` : 'Write in a professional, authoritative, and cinematic tone.'}
+
 # Objective
-Generate a professional, high-end product description for cinematography equipment. 
+Generate a professional product description.
 Mode: ${mode === 'detailed' ? 'DETAILED (Comprehensive & Analytical)' : 'CONCISE (Punchy & Direct)'}
 
 # Structure Rules
 ${mode === 'detailed' ? `
 - Title: Professional product name.
-- Overview: An engaging 1-2 sentence hook.
-- Sections: 3-4 detailed paragraphs focusing on different functional areas (e.g., Imaging Performance, Ergonomics & Build, Connectivity). 
-- Features: 8-12 comprehensive bullet points with technical depth.
+- Overview: Engaging hook paragraphs.
+- Sections: Detailed paragraphs (Imaging, Build, etc.). 
+- Features: 8-12 comprehensive bullet points.
 ` : `
-- Title: Professional product name.
-- Overview: A concise but powerful single-paragraph summary (30-60 words).
-- Sections: Leave as an empty array.
-- Features: 5-8 punchy bullet points highlighting key advantages.
+- Title: Product name.
+- Overview: 1-2 powerful paragraphs ONLY. No subheadings or "Overview" label.
+- Sections: Leave as an empty array [].
+- Features: 5-8 punchy bullet points.
 `}
 
-# Style Guidelines
-- **INTELLIGENT BOLDING**: You MUST identify and bold (**key points**) every technical specification, unique parameter, product material, and high-value selling point within the sentences (e.g., **Full-frame 8K sensor**, **17 stops of dynamic range**, **Carbon Fibre construction**, **Native ISO 800**).
-- **SPACING**: You MUST use double newlines (\\n\\n) between paragraphs in the "overview" and "content" fields to ensure clear visual separation. Never return a single wall of text.
-- Avoid fluff; focus on professional utility and specific performance metrics.
-- Tone should be authoritative, premium, and sophisticated.
+# Custom User Instructions
+${customInstructions ? `IMPORTANT: Follow these specific user requests:\n${customInstructions}` : 'No additional user instructions.'}
 
-# Output Format
-Return ONLY a JSON object:
+# ANTI-HALLUCINATION GUARDRAILS
+- DO NOT invent technical specifications. 
+- If information is sparse, focus on stylistic polish of the provided facts.
+- Parameters must be 100% accurate to the source material.
+
+# Style Guidelines
+- **INTELLIGENT BOLDING**: Bold (**key parameters**) and (**selling points**).
+- **SPACING**: Use \\n\\n for clear paragraph separation.
+- Tone: Authoritative, premium, sophisticated.
+
+# Output Format (STRICT JSON)
 {
   "title": "string",
   "overview": "string",
-  "sections": [
-    { "heading": "Heading Name", "content": "Detailed content..." }
-  ],
-  "features": ["string", "string", ...]
+  "sections": [{"heading": "string", "content": "string"}],
+  "features": ["string"]
 }
 `;
+};
 
 // Configuration
 const MINIMAX_KEY = import.meta.env.VITE_MINIMAX_API_KEY || "";
 const MINIMAX_MODEL = import.meta.env.VITE_MINIMAX_MODEL || "MiniMax-M2.7-highspeed";
 const MINIMAX_BASE_URL = "https://api.minimaxi.com/v1/chat/completions";
 
-export async function generateDescription(materials, references, files = [], onEngineStatus, mode = 'concise') {
+/**
+ * Helper to extract and prepare link context
+ * Note: Real-world scraping should ideally happen via a proxy or extension background script
+ */
+const prepareLinkContext = async (references) => {
+  if (!references) return "";
+  const urls = references.match(/https?:\/\/[^\s]+/g) || [];
+  if (urls.length === 0) return "";
+
+  let context = "\n### Reference Content from Links:\n";
+  // For now, we note the links for the AI. In a real extension, 
+  // the background script would have pre-scraped these.
+  for (const url of urls.slice(0, 3)) {
+    context += `- Reference URL: ${url}\n`;
+  }
+  return context;
+};
+
+export async function generateDescription(materials, references, files = [], onEngineStatus, mode = 'concise', customInstructions = '', history = []) {
   if (!MINIMAX_KEY) {
-    throw new Error("MiniMax API Key is missing. Please check your .env file.");
+    throw new Error("MiniMax API Key is missing.");
   }
 
-  if (onEngineStatus) onEngineStatus(`MiniMax Optimized (${mode})`);
+  if (onEngineStatus) onEngineStatus(`Synthesizing (${mode})...`);
 
   try {
-    return await generateWithMiniMax(materials, references, files, mode);
+    const linkContext = await prepareLinkContext(references + ' ' + customInstructions);
+    const combinedMaterials = `${materials}${linkContext}`;
+    
+    return await generateWithMiniMax(combinedMaterials, references, files, mode, customInstructions, history);
   } catch (error) {
     console.error("MiniMax Engine Error:", error);
     throw new Error(`AI Generation failed: ${error.message}`);
   }
 }
 
-async function generateWithMiniMax(materials, references, files, mode) {
-  const prompt = getSystemPrompt(mode);
+async function generateWithMiniMax(materials, references, files, mode, customInstructions, history) {
+  const prompt = getSystemPrompt(mode, customInstructions, history);
   
-  // Construct the message content
-  // Note: Handling vision as text description for now if files are present, 
-  // until confirmed that the specific abab model supports OpenAI vision payloads.
-  let textContent = `Materials: ${materials}\nRefs: ${references}\nGenerate description in ${mode.toUpperCase()} mode. Output only pure JSON.`;
+  let textContent = `Source Materials:\n${materials}\n\nReferences:\n${references}\n\nTask: Generate ${mode} description. JSON ONLY.`;
   
-  const userContent = [
-    { type: "text", text: textContent }
-  ];
+  const userContent = [{ type: "text", text: textContent }];
 
-  // If there are files/images, we attempt to pass them in OpenAI format.
-  // MiniMax International (MiniMaxi) usually supports this in their multimodal models.
   for (const file of files) {
     userContent.push({
       type: "image_url",
@@ -91,37 +124,29 @@ async function generateWithMiniMax(materials, references, files, mode) {
         { role: "system", content: prompt },
         { role: "user", content: userContent }
       ],
-      temperature: 0.1, // High precision for JSON
+      temperature: 0.05, // Extremely low temperature for strict compliance
       max_tokens: 3000
     })
   });
 
   const data = await response.json();
-  
   if (!response.ok) {
-    // Handle MiniMax specific error codes if available
-    const errorMsg = data.base_resp?.status_msg || data.error?.message || "MiniMax Request failed";
-    throw new Error(errorMsg);
+    throw new Error(data.error?.message || "MiniMax Request failed");
   }
 
   let text = data.choices[0].message.content.trim();
   
-  // Robust cleaning of markdown code blocks
-  text = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
-  
+  // Robust JSON extraction
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error("AI failed to return valid JSON.");
+
   try {
-    return JSON.parse(text);
+    const parsed = JSON.parse(jsonMatch[0]);
+    // Ensure sections is an array even in concise mode
+    if (!parsed.sections) parsed.sections = [];
+    return parsed;
   } catch (e) {
-    console.error("Failed to parse JSON from MiniMax:", text);
-    // Attempt a secondary clean if there's trailing garbage
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      try {
-        return JSON.parse(jsonMatch[0]);
-      } catch (e2) {
-        throw new Error("AI output was not valid JSON format.");
-      }
-    }
-    throw new Error("AI output was not valid JSON. Please try again.");
+    console.error("JSON Parse Error. Raw text:", text);
+    throw new Error("AI output format error. Please try again.");
   }
 }

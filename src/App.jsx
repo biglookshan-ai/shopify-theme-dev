@@ -18,6 +18,7 @@ function App() {
   const [productName, setProductName] = useState('');
   const [materials, setMaterials] = useState('');
   const [references, setReferences] = useState('');
+  const [customInstructions, setCustomInstructions] = useState('');
   const [files, setFiles] = useState([]);
 
   // Execution States
@@ -168,7 +169,7 @@ function App() {
       }
 
       const combinedMaterials = `Product Name Concept: ${productName}\n---\n${materials}`;
-      const outputJson = await generateDescription(combinedMaterials, references, processedFiles, setEngineStatus, genMode);
+      const outputJson = await generateDescription(combinedMaterials, references, processedFiles, setEngineStatus, genMode, customInstructions, history);
       setResult(outputJson);
       setEngineStatus('Success');
     } catch (err) {
@@ -210,10 +211,10 @@ function App() {
 
     try {
       await setDoc(doc(db, "history", productToSave.id), productToSave);
-      setHistory(updatedHistoryList);
+      // We rely on onSnapshot to update the history list
       setActiveHistoryId(productToSave.id);
       setActiveVersionId(newVersion.id);
-      setResult(null);
+      // Removed setResult(null) to allow user to see what they saved
     } catch (err) {
       console.error("Failed to save to Firebase:", err);
     }
@@ -276,6 +277,7 @@ function App() {
     setProductName('');
     setMaterials('');
     setReferences('');
+    setCustomInstructions('');
     setFiles([]);
   };
 
@@ -362,12 +364,23 @@ function App() {
 
                 <div className="glass-panel input-card">
                     <label><RefreshCw size={16} /> Reference Links</label>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste URLs (official site, news coverage, competitor products).</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste URLs (e.g. YouTube, Bilibili, Official Specs).</p>
                     <textarea 
-                        style={{ minHeight: '80px' }}
+                        style={{ minHeight: '60px' }}
                         value={references} 
                         onChange={(e) => setReferences(e.target.value)} 
                         placeholder="e.g. https://www.arri.com/..." 
+                    />
+                </div>
+
+                <div className="glass-panel input-card" style={{ borderColor: 'var(--accent-primary)', opacity: 0.9 }}>
+                    <label style={{ color: 'var(--accent-primary)' }}><Wand2 size={16} /> Custom Instructions</label>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Special requests? (e.g., "Exclude weight specs" or "Focus on low-light performance")</p>
+                    <textarea 
+                        style={{ minHeight: '60px' }}
+                        value={customInstructions} 
+                        onChange={(e) => setCustomInstructions(e.target.value)} 
+                        placeholder="Type your extra requirements here..." 
                     />
                 </div>
 
