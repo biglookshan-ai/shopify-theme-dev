@@ -91,7 +91,7 @@ const EN_ZH_UI = {
 
 function App() {
   const [engineStatus, setEngineStatus] = useState('Standby');
-  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [genMode, setGenMode] = useState('concise'); // 'concise' or 'detailed'
   const [lang, setLang] = useState(() => localStorage.getItem('cinegear_lang') || 'en');
 
@@ -351,7 +351,7 @@ function App() {
     setResult(ver.result);
     setTranslationResult(null);
     setIsViewingTranslation(false);
-    setShowMobileSidebar(false);
+    setShowSidebar(false);
   };
 
   const deleteHistoryProduct = async (e, productId) => {
@@ -439,7 +439,7 @@ function App() {
     <div className="app-container">
       <header className="app-header">
         <div className="header-left">
-          <button className="mobile-menu-btn" onClick={() => setShowMobileSidebar(!showMobileSidebar)}>
+          <button className="mobile-menu-btn" onClick={() => setShowSidebar(!showSidebar)}>
             <Menu size={20} />
           </button>
           <div className="header-brand">
@@ -462,15 +462,11 @@ function App() {
         </div>
       </header>
 
-      <div className={`mobile-overlay ${showMobileSidebar ? 'visible' : ''}`} onClick={() => setShowMobileSidebar(false)} />
+      <div className={`mobile-overlay ${showSidebar ? 'visible' : ''}`} onClick={() => setShowSidebar(false)} />
 
       <div className="main-layout">
-        <div className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
+        <div className={`sidebar-panel ${showSidebar ? 'open' : ''}`}>
           <aside className="sidebar">
-            <button onClick={startNew} className="new-btn">
-              <Sparkles size={16} /> {t('newDesc')}
-            </button>
-
             <div className="history-label">{t('historyVault')}</div>
             <div className="history-list">
               {history.length === 0 ? (
@@ -530,8 +526,18 @@ function App() {
           {/* Column 2: Draft Workspace */}
           <div className="pane workspace-pane">
             <div className="pane-header">
-              <h2 className="pane-title">{t('draftWorkspace')}</h2>
-              <p className="pane-subtitle">{t('workspaceSubtitle')}</p>
+              <div className="pane-header-left">
+                <h2 className="pane-title">{t('draftWorkspace')}</h2>
+                <p className="pane-subtitle">{t('workspaceSubtitle')}</p>
+              </div>
+              <div className="pane-header-actions">
+                <button onClick={() => setShowSidebar(true)} className="action-btn">
+                  <Clock size={16} /> {t('historyVault')}
+                </button>
+                <button onClick={startNew} className="action-btn primary">
+                  <Sparkles size={16} /> {t('newDesc')}
+                </button>
+              </div>
             </div>
             
             <div className="pane-content">

@@ -159,12 +159,21 @@ body {
 
 /* Sidebar - Column 1 */
 .sidebar-panel {
+  position: fixed;
+  left: -280px;
   width: 280px;
-  flex-shrink: 0;
+  height: calc(100vh - 60px);
+  top: 60px;
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  z-index: 1001;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-panel.open {
+  transform: translateX(280px);
 }
 
 .sidebar {
@@ -216,9 +225,47 @@ body {
 .pane:last-child { border-right: none; }
 
 .pane-header {
-  padding: 24px 32px;
+  padding: 16px 32px;
   border-bottom: 1px solid var(--border-color);
   background: rgba(8, 10, 13, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pane-header-left { display: flex; flex-direction: column; }
+.pane-header-actions { display: flex; align-items: center; gap: 8px; }
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: rgba(255, 179, 0, 0.1);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.action-btn.primary {
+  background: var(--accent-primary);
+  color: black;
+  border: none;
+}
+
+.action-btn.primary:hover {
+  background: var(--accent-gradient);
+  transform: translateY(-1px);
 }
 
 .pane-title { font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 12px; }
@@ -415,8 +462,7 @@ textarea { min-height: 120px; line-height: 1.6; }
   .pane:last-child { border-bottom: none; }
   .pane-content { overflow-y: visible; }
   .main-layout { overflow-y: auto; height: auto; display: block; }
-  .sidebar-panel { position: fixed; left: -280px; z-index: 1001; height: 100vh; }
-  .sidebar-panel.mobile-open { transform: translateX(280px); }
+  .sidebar-panel { height: 100vh; top: 0; }
   .workspace-stack { max-width: 100%; }
 }
 
