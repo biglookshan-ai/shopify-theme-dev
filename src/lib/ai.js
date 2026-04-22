@@ -39,7 +39,7 @@ Return ONLY a JSON object:
 
 // Configuration
 const MINIMAX_KEY = import.meta.env.VITE_MINIMAX_API_KEY || "";
-const MINIMAX_MODEL = import.meta.env.VITE_MINIMAX_MODEL || "abab6.5-chat";
+const MINIMAX_MODEL = import.meta.env.VITE_MINIMAX_MODEL || "MiniMax-M2.7-highspeed";
 const MINIMAX_BASE_URL = "https://api.minimaxi.com/v1/chat/completions";
 
 export async function generateDescription(materials, references, files = [], onEngineStatus, mode = 'concise') {
