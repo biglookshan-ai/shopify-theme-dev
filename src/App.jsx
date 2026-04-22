@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Settings, Key, Wand2, ArrowRight, Video, Sparkles, AlertCircle, Save, RefreshCw, Clock, ChevronRight, Trash2, Menu, FileText, X, Image } from 'lucide-react';
+import { Settings, Key, Wand2, ArrowRight, Sparkles, AlertCircle, Save, RefreshCw, Clock, ChevronRight, Trash2, Menu, FileText, X, Image, Type, Link } from 'lucide-react';
 import { generateDescription, translateResultToZH } from './lib/ai';
 import { db } from './lib/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc, query, orderBy, onSnapshot } from 'firebase/firestore';
@@ -24,7 +24,7 @@ const TRANSLATIONS = {
     uploadHint: "Drag & drop or tap to attach Files/Images (max 20MB)",
     customPrompt: "Custom Prompt",
     customPromptHint: "Special requests? (e.g., \"Exclude weight specs\" or \"Focus on low-light performance\")",
-    concise: "Concise Summary",
+    concise: "Standard Mode",
     detailed: "Detailed Analysis",
     generate: "Generate Description",
     synthesizing: "Synthesizing...",
@@ -56,7 +56,7 @@ const TRANSLATIONS = {
     uploadHint: "拖拽或点击上传文件/图片 (最大 20MB)",
     customPrompt: "Custom Prompt",
     customPromptHint: "特殊要求？（例如：“不含重量规格”或“强调低光表现”）",
-    concise: "简约模式",
+    concise: "标准模式",
     detailed: "详细模式",
     generate: "生成描述内容",
     synthesizing: "正在生成...",
@@ -439,9 +439,9 @@ function App() {
     <div className="app-container">
       <header className="app-header">
         <div className="header-left">
-          <div className="brand-section" style={{ marginBottom: 0 }}>
-             <div className="brand-icon" style={{ width: '32px', height: '32px' }}>
-                <Camera color="white" size={16} />
+          <div className="header-brand">
+             <div className="header-icon-box" style={{ background: 'var(--accent-primary)', borderRadius: '10px' }}>
+                <Sparkles color="black" size={16} />
              </div>
              <h1 className="header-title">
                CineGear <span className="text-gradient">{t('appTitle')}</span>
@@ -504,7 +504,7 @@ function App() {
                           >
                             <div className="ver-label">
                               <ChevronRight size={10} className="ver-icon" />
-                              <span>{ver.mode === 'concise' ? 'Concise' : 'Detailed'}</span>
+                              <span>{ver.mode === 'concise' ? 'Standard' : 'Detailed'}</span>
                             </div>
                             <button 
                               onClick={(e) => deleteHistoryVersion(e, prod.id, ver.id)} 
@@ -534,13 +534,13 @@ function App() {
             <div className="pane-content">
               <div className="workspace-stack">
                 <div className="glass-panel input-card">
-                  <label><Camera size={16} /> {t('productName')}</label>
+                  <label><Type size={16} /> {t('productName')}</label>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>{t('productNameHint')}</p>
                   <input type="text" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. Arri Alexa 35, DZOFILM Catta Zoom..." />
                 </div>
 
                 <div className="glass-panel input-card">
-                    <label><RefreshCw size={16} /> {t('links')}</label>
+                    <label><Link size={16} /> {t('links')}</label>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>{t('linksHint')}</p>
                     <textarea 
                         style={{ minHeight: '60px' }}
@@ -551,7 +551,7 @@ function App() {
                 </div>
 
                 <div className="glass-panel input-card">
-                  <label><Video size={16} /> {t('materials')}</label>
+                  <label><FileText size={16} /> {t('materials')}</label>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>{t('materialsHint')}</p>
                   <textarea value={materials} onChange={(e) => setMaterials(e.target.value)} placeholder="e.g. Full-frame cinema camera, 8K 60fps RAW internal recording, 17 stops dynamic range..." />
                   
