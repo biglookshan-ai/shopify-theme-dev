@@ -525,18 +525,18 @@ function App() {
         <div className="pane-container">
           {/* Column 2: Draft Workspace */}
           <div className="pane workspace-pane">
-            <div className="pane-header">
-              <div className="pane-header-left">
-                <h2 className="pane-title">{t('draftWorkspace')}</h2>
-                <p className="pane-subtitle">{t('workspaceSubtitle')}</p>
-              </div>
-              <div className="pane-header-actions">
+            <div className="pane-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '20px' }}>
+              <div className="pane-header-actions" style={{ width: '100%', justifyContent: 'flex-start' }}>
                 <button onClick={() => setShowSidebar(true)} className="action-btn">
                   <Clock size={16} /> {t('historyVault')}
                 </button>
                 <button onClick={startNew} className="action-btn primary">
                   <Sparkles size={16} /> {t('newDesc')}
                 </button>
+              </div>
+              <div className="pane-header-left">
+                <h2 className="pane-title" style={{ fontSize: '1.5rem' }}>{t('draftWorkspace')}</h2>
+                <p className="pane-subtitle">{t('workspaceSubtitle')}</p>
               </div>
             </div>
             
