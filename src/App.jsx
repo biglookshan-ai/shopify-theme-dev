@@ -239,7 +239,7 @@ function App() {
       setTimeout(() => setSaveFeedback(false), 2000);
     } catch (err) {
       console.error("Failed to save to Firebase:", err);
-      setError("Database Error: Could not save to Vault.");
+      setError(`Database Error: ${err.message || 'Could not save to Vault'}`);
       setEngineStatus('Error');
     }
   };
