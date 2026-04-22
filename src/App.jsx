@@ -6,10 +6,86 @@ import { collection, doc, setDoc, getDocs, deleteDoc, query, orderBy, onSnapshot
 import ReactMarkdown from 'react-markdown';
 import './index.css';
 
+const TRANSLATIONS = {
+  en: {
+    appTitle: "Description Generator",
+    engine: "Engine",
+    newDesc: "New Description",
+    historyVault: "History Vault",
+    noHistory: "No history yet.",
+    draftWorkspace: "Draft Workspace",
+    workspaceSubtitle: "Fill in the details. AI will synthesize and format everything into perfect British English.",
+    productName: "Product Name *",
+    productNameHint: "A short identifier for your history list.",
+    links: "Links",
+    linksHint: "Paste product links, news coverage, official URLs, or video links here.",
+    materials: "Product Materials",
+    materialsHint: "Copy or enter raw product descriptions, technical specifications, key selling points, etc.",
+    uploadHint: "Drag & drop or tap to attach Files/Images (max 20MB)",
+    customPrompt: "Custom Prompt",
+    customPromptHint: "Special requests? (e.g., \"Exclude weight specs\" or \"Focus on low-light performance\")",
+    concise: "Concise Summary",
+    detailed: "Detailed Analysis",
+    generate: "Generate Description",
+    synthesizing: "Synthesizing...",
+    outputResult: "Output Result",
+    copyHtml: "Copy HTML",
+    copied: "Copied!",
+    applyShopify: "Apply to Shopify",
+    saveVault: "Save to Vault",
+    saved: "Saved!",
+    errorEmptyName: "Product Name is required.",
+    errorNoSource: "Please provide at least one source: Links, Materials, or Images.",
+    errorSaveName: "Please enter a Product Name before saving to Vault.",
+    emptyState: "Your polished British English description will appear here."
+  },
+  zh: {
+    appTitle: "描述生成器",
+    engine: "引擎",
+    newDesc: "新建描述",
+    historyVault: "历史备忘",
+    noHistory: "暂无历史记录",
+    draftWorkspace: "草稿工作区",
+    workspaceSubtitle: "填入详细信息，AI 将为您合成并格式化为专业的英式英语描述。",
+    productName: "产品名称 *",
+    productNameHint: "用于历史列表的简短标识。",
+    links: "参考链接",
+    linksHint: "在此处粘贴产品链接、新闻报道、官网或视频链接。",
+    materials: "产品资料",
+    materialsHint: "复制或输入产品原始描述、技术规格、核心卖点等信息。",
+    uploadHint: "拖拽或点击上传文件/图片 (最大 20MB)",
+    customPrompt: "Custom Prompt",
+    customPromptHint: "特殊要求？（例如：“不含重量规格”或“强调低光表现”）",
+    concise: "简约模式",
+    detailed: "详细模式",
+    generate: "生成描述内容",
+    synthesizing: "正在生成...",
+    outputResult: "生成结果",
+    copyHtml: "复制 HTML",
+    copied: "已复制！",
+    applyShopify: "应用到 Shopify",
+    saveVault: "保存到库",
+    saved: "已保存！",
+    errorEmptyName: "产品名称为必填项。",
+    errorNoSource: "请至少提供一种来源：链接、资料或图片文件。",
+    errorSaveName: "保存到库之前请先输入产品名称。",
+    emptyState: "生成的英式英语描述将在这里显示。"
+  }
+};
+
 function App() {
   const [engineStatus, setEngineStatus] = useState('Standby');
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [genMode, setGenMode] = useState('concise'); // 'concise' or 'detailed'
+  const [lang, setLang] = useState(() => localStorage.getItem('cinegear_lang') || 'en');
+
+  const t = (key) => TRANSLATIONS[lang][key] || key;
+
+  const toggleLang = () => {
+    const newLang = lang === 'en' ? 'zh' : 'en';
+    setLang(newLang);
+    localStorage.setItem('cinegear_lang', newLang);
+  };
 
   // Detect if running in a Chrome Extension context (Side Panel / Popup)
   const isExtension = typeof chrome !== 'undefined' && !!chrome.runtime && !!chrome.runtime.id;
@@ -155,11 +231,11 @@ function App() {
 
   const handleGenerate = async () => {
     if (!productName.trim()) {
-      setError('Product Name is required.');
+      setError(t('errorEmptyName'));
       return;
     }
     if (!materials.trim() && !references.trim() && files.length === 0) {
-      setError('Please provide at least one source: Links, Materials, or Images.');
+      setError(t('errorNoSource'));
       return;
     }
 
@@ -197,7 +273,7 @@ function App() {
     if (!result) return;
     
     if (!productName.trim()) {
-      setError('Please enter a Product Name before saving to Vault.');
+      setError(t('errorSaveName'));
       return;
     }
 
@@ -314,13 +390,18 @@ function App() {
                 <Camera color="white" size={16} />
              </div>
              <h1 className="header-title">
-               CineGear <span className="text-gradient">Description Generator</span>
+               CineGear <span className="text-gradient">{t('appTitle')}</span>
              </h1>
           </div>
         </div>
-        <div className="engine-status">
-          <span className="status-dot" style={{ background: isGenerating ? 'var(--accent-primary)' : '#10b981', boxShadow: isGenerating ? '0 0 10px var(--accent-primary)' : 'none' }} />
-          Engine: {engineStatus}
+        <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button onClick={toggleLang} className="lang-toggle">
+            {lang === 'en' ? 'ZH / 中' : 'EN / 英'}
+          </button>
+          <div className="engine-status">
+            <span className="status-dot" style={{ background: isGenerating ? 'var(--accent-primary)' : '#10b981', boxShadow: isGenerating ? '0 0 10px var(--accent-primary)' : 'none' }} />
+            {t('engine')}: {engineStatus}
+          </div>
         </div>
       </header>
 
@@ -330,13 +411,13 @@ function App() {
         <div className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
           <aside className="sidebar">
             <button onClick={startNew} className="new-btn">
-              <Sparkles size={16} /> New Description
+              <Sparkles size={16} /> {t('newDesc')}
             </button>
 
-            <div className="history-label">History Vault</div>
+            <div className="history-label">{t('historyVault')}</div>
             <div className="history-list">
               {history.length === 0 ? (
-                <p className="no-history" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '20px' }}>No history yet.</p>
+                <p className="no-history" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '20px' }}>{t('noHistory')}</p>
               ) : (
                 history.map(prod => (
                   <div key={prod.id} className={`history-group-card ${activeHistoryId === prod.id ? 'active' : ''}`}>
@@ -392,21 +473,21 @@ function App() {
           {/* Column 2: Draft Workspace */}
           <div className="pane workspace-pane">
             <div className="pane-header">
-              <h2 className="pane-title">Draft Workspace</h2>
-              <p className="pane-subtitle">Fill in the details. AI will synthesize and format everything into perfect British English.</p>
+              <h2 className="pane-title">{t('draftWorkspace')}</h2>
+              <p className="pane-subtitle">{t('workspaceSubtitle')}</p>
             </div>
             
             <div className="pane-content">
               <div className="workspace-stack">
                 <div className="glass-panel input-card">
-                  <label><Camera size={16} /> Product Name *</label>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>A short identifier for your history list.</p>
+                  <label><Camera size={16} /> {t('productName')}</label>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>{t('productNameHint')}</p>
                   <input type="text" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. Arri Alexa 35, DZOFILM Catta Zoom..." />
                 </div>
 
                 <div className="glass-panel input-card">
-                    <label><RefreshCw size={16} /> Links</label>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste product links, news coverage, official URLs, or video links here.</p>
+                    <label><RefreshCw size={16} /> {t('links')}</label>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>{t('linksHint')}</p>
                     <textarea 
                         style={{ minHeight: '60px' }}
                         value={references} 
@@ -416,8 +497,8 @@ function App() {
                 </div>
 
                 <div className="glass-panel input-card">
-                  <label><Video size={16} /> Product Materials</label>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Copy or enter raw product descriptions, technical specifications, key selling points, etc.</p>
+                  <label><Video size={16} /> {t('materials')}</label>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>{t('materialsHint')}</p>
                   <textarea value={materials} onChange={(e) => setMaterials(e.target.value)} placeholder="e.g. Full-frame cinema camera, 8K 60fps RAW internal recording, 17 stops dynamic range..." />
                   
                   <div 
@@ -436,7 +517,7 @@ function App() {
                     />
                     <div className="upload-content" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <Image size={20} style={{ opacity: 0.7 }} />
-                      <p>Drag & drop or tap to attach Files/Images (max 20MB)</p>
+                      <p>{t('uploadHint')}</p>
                     </div>
                   </div>
 
@@ -473,8 +554,8 @@ function App() {
                 </div>
 
                 <div className="glass-panel input-card">
-                    <label><Wand2 size={16} /> Custom Prompt</label>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Special requests? (e.g., "Exclude weight specs" or "Focus on low-light performance")</p>
+                    <label><Wand2 size={16} /> {t('customPrompt')}</label>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>{t('customPromptHint')}</p>
                     <textarea 
                         style={{ minHeight: '60px' }}
                         value={customInstructions} 
@@ -488,15 +569,15 @@ function App() {
                 <div className="master-actions">
                   <div className="mode-selector">
                     <button onClick={() => setGenMode('concise')} className={`mode-btn ${genMode === 'concise' ? 'active' : ''}`}>
-                      Concise Summary
+                      {t('concise')}
                     </button>
                     <button onClick={() => setGenMode('detailed')} className={`mode-btn ${genMode === 'detailed' ? 'active' : ''}`}>
-                      Detailed Analysis
+                      {t('detailed')}
                     </button>
                   </div>
 
                   <button onClick={handleGenerate} disabled={isGenerating} className="generate-btn">
-                    {isGenerating ? 'Synthesizing...' : 'Generate Description'}
+                    {isGenerating ? t('synthesizing') : t('generate')}
                     {!isGenerating && <Sparkles size={18} />}
                   </button>
                 </div>
@@ -508,7 +589,7 @@ function App() {
           <div className="pane result-pane">
             <div className="pane-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h2 className="pane-title"><ArrowRight size={20} color="var(--accent-primary)" /> Output Result</h2>
+                <h2 className="pane-title"><ArrowRight size={20} color="var(--accent-primary)" /> {t('outputResult')}</h2>
               </div>
               {result && (
                   <div className="result-actions" style={{ display: 'flex', gap: '8px' }}>
@@ -522,9 +603,9 @@ function App() {
                         transition: 'all 0.3s'
                       }}
                     >
-                      {copyFeedback ? 'Copied!' : 'Copy HTML'}
+                      {copyFeedback ? t('copied') : t('copyHtml')}
                     </button>
-                    {isExtension && <button onClick={applyToShopify} className="result-btn">Apply to Shopify</button>}
+                    {isExtension && <button onClick={applyToShopify} className="result-btn">{t('applyShopify')}</button>}
                     <button 
                       onClick={saveToHistory} 
                       className={`result-btn save-vault-btn ${saveFeedback ? 'saved' : ''}`}
@@ -534,7 +615,7 @@ function App() {
                         color: saveFeedback ? 'white' : 'var(--text-secondary)'
                       }}
                     >
-                      {saveFeedback ? <><Save size={14} /> Saved!</> : 'Save to Vault'}
+                      {saveFeedback ? <><Save size={14} /> {t('saved')}</> : t('saveVault')}
                     </button>
                   </div>
               )}
@@ -581,7 +662,7 @@ function App() {
               ) : (
                 <div className="empty-state">
                   <Sparkles size={48} />
-                  <p>Your polished British English description will appear here.</p>
+                  <p>{t('emptyState')}</p>
                 </div>
               )}
             </div>
