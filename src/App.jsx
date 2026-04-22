@@ -34,7 +34,6 @@ function App() {
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const [activeHistoryId, setActiveHistoryId] = useState(null);
   const [activeVersionId, setActiveVersionId] = useState(null);
-  const [copyFeedback, setCopyFeedback] = useState(false);
 
   // Extension Logic: Listen for scraped data from Shopify page (only in extension mode)
   useEffect(() => {
