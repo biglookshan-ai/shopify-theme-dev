@@ -345,10 +345,55 @@ function App() {
                         <div className="history-title">{prod.productName}</div>
                         <button onClick={(e) => deleteHistoryProduct(e, prod.id)} className="delete-btn" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Trash2 size={12} /></button>
                       </div>
-                      <div className="history-meta">
-                        <Clock size={11} /> {new Date(prod.lastUpdated).toLocaleDateString()}
+                      <div className="history-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Clock size={11} /> {new Date(prod.lastUpdated).toLocaleDateString()}
+                        </div>
+                        <div className="version-count" style={{ fontSize: '0.7rem', opacity: 0.6 }}>
+                          {prod.versions?.length} {prod.versions?.length === 1 ? 'version' : 'versions'}
+                        </div>
                       </div>
                     </div>
+                    
+                    {/* Version List for selected product */}
+                    {activeHistoryId === prod.id && prod.versions?.length > 0 && (
+                      <div className="version-child-list" style={{ marginLeft: '12px', borderLeft: '1px solid var(--border-color)', marginTop: '4px' }}>
+                        {prod.versions.map((ver, vIdx) => (
+                          <div 
+                            key={ver.id} 
+                            className={`history-ver-item ${activeVersionId === ver.id ? 'active' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              loadHistoryItem(prod.id, ver.id);
+                            }}
+                            style={{
+                              padding: '6px 12px',
+                              fontSize: '0.75rem',
+                              cursor: 'pointer',
+                              color: activeVersionId === ver.id ? 'var(--accent-primary)' : 'var(--text-muted)',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              borderRadius: '4px',
+                              margin: '2px 0 2px 8px',
+                              background: activeVersionId === ver.id ? 'rgba(255,179,0,0.05)' : 'transparent'
+                            }}
+                          >
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <ChevronRight size={10} style={{ opacity: 0.5 }} />
+                              <span>{ver.mode === 'concise' ? 'Concise' : 'Detailed'}</span>
+                            </div>
+                            <button 
+                              onClick={(e) => deleteHistoryVersion(e, prod.id, ver.id)} 
+                              className="delete-ver-btn"
+                              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px', opacity: 0 }}
+                            >
+                              <Trash2 size={10} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))
               )}
