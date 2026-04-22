@@ -43,9 +43,11 @@ ${customInstructions ? `IMPORTANT: Follow these specific user requests:\n${custo
 - Parameters must be 100% accurate to the source material.
 
 # Style Guidelines
-- **INTELLIGENT BOLDING**: Bold (**key parameters**) and (**selling points**).
-- **SPACING**: Use \\n\\n for clear paragraph separation.
-- Tone: Authoritative, premium, sophisticated.
+- **INTELLIGENT BOLDING (CRITICAL)**: In the 'Overview' and 'Sections' narrative, you MUST identify and bold (**key parameters**), (**high-value selling points**), and (**material specifications**). 
+  - Examples: **Full-frame 8K sensor**, **17 stops of dynamic range**, **Grade 5 Titanium construction**, **Native ISO 800**.
+  - Do not bold generic words; only bold the specific technical advantages.
+- **SPACING**: Use \n\n for clear paragraph separation.
+- Tone: Authoritative, premium, sophisticated cinematography expert.
 
 # Output Format (STRICT JSON)
 {
