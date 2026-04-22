@@ -30,6 +30,7 @@ function App() {
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const [activeHistoryId, setActiveHistoryId] = useState(null);
   const [activeVersionId, setActiveVersionId] = useState(null);
+  const [copyFeedback, setCopyFeedback] = useState(false);
 
   // Extension Logic: Listen for scraped data from Shopify page (only in extension mode)
   useEffect(() => {
@@ -44,8 +45,8 @@ function App() {
     }
   }, []);
 
-  const applyToShopify = () => {
-    if (!result) return;
+  const getShopifyHtml = () => {
+    if (!result) return '';
     
     const sectionsHtml = result.sections && result.sections.length > 0 
       ? result.sections.map(s => `
@@ -55,7 +56,7 @@ function App() {
         `).join('')
       : '';
 
-    const descriptionHtml = `
+    return `
       <div class="product-description-ai">
         <p><strong>Overview</strong></p>
         ${result.overview.split('\n').filter(p => p.trim()).map(p => `
@@ -80,8 +81,11 @@ function App() {
         <p style="color: #888; font-size: 0.8em;"><em>*This text is summarised by AI</em></p>
       </div>
     `;
+  };
 
-    if (isExtension && chrome.tabs) {
+  const applyToShopify = () => {
+    const descriptionHtml = getShopifyHtml();
+    if (!descriptionHtml) return;
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]) {
           chrome.tabs.sendMessage(tabs[0].id, {
@@ -93,6 +97,17 @@ function App() {
           });
         }
       });
+    }
+  };
+
+  const copyToClipboard = async () => {
+    const html = getShopifyHtml();
+    try {
+      await navigator.clipboard.writeText(html);
+      setCopyFeedback(true);
+      setTimeout(() => setCopyFeedback(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
     }
   };
 
@@ -387,7 +402,19 @@ function App() {
                 <h2 className="pane-title"><ArrowRight size={20} color="var(--accent-primary)" /> Output Result</h2>
               </div>
               {result && (
-                  <div className="result-actions">
+                  <div className="result-actions" style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      onClick={copyToClipboard} 
+                      className="result-btn" 
+                      style={{ 
+                        background: copyFeedback ? 'var(--success)' : 'rgba(255,179,0,0.1)', 
+                        color: copyFeedback ? 'white' : 'var(--accent-primary)', 
+                        border: '1px solid var(--accent-primary)',
+                        transition: 'all 0.3s'
+                      }}
+                    >
+                      {copyFeedback ? 'Copied!' : 'Copy HTML'}
+                    </button>
                     {isExtension && <button onClick={applyToShopify} className="result-btn">Apply to Shopify</button>}
                     <button onClick={saveToHistory} className="result-btn save-vault-btn">Save to Vault</button>
                   </div>
