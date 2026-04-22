@@ -302,7 +302,7 @@ function App() {
                 <Camera color="white" size={16} />
              </div>
              <h1 className="header-title">
-               CineGear <span className="text-gradient">描述生成器</span>
+               CineGear <span className="text-gradient">Description Generator</span>
              </h1>
           </div>
         </div>
