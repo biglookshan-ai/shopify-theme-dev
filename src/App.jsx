@@ -50,8 +50,8 @@ function App() {
     const sectionsHtml = result.sections && result.sections.length > 0 
       ? result.sections.map(s => `
           <div class="product-section" style="margin-bottom: 20px;">
-            <h4 style="margin-bottom: 8px; color: #333;">${s.heading}</h4>
-            <p style="line-height: 1.6;">${s.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>
+            <strong style="display: block; margin-bottom: 8px;">${s.heading}</strong>
+            <p style="margin-bottom: 12px; line-height: 1.6;">${s.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>
           </div>
         `).join('')
       : '';
@@ -67,9 +67,9 @@ function App() {
         
         <br/>
         <strong style="font-size: 1em; color: #FFB300; display: block; margin-bottom: 8px;">Features:</strong>
-        <ul style="padding-left: 20px;">
+        <ul style="padding-left: 20px; list-style-type: disc;">
           ${result.features.map(f => `
-            <li style="margin-bottom: 6px; line-height: 1.5;">
+            <li style="margin-bottom: 12px; line-height: 1.5;">
               ${f.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
             </li>
           `).join('')}

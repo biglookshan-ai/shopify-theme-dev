@@ -282,8 +282,8 @@ textarea { min-height: 120px; line-height: 1.6; }
 .save-vault-btn { background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border-color); }
 
 /* Result Fields */
-.result-field { margin-bottom: 40px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-.field-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--accent-primary); letter-spacing: 2px; margin-bottom: 16px; display: block; }
+.result-field { margin-bottom: 24px; padding-bottom: 0; border-bottom: none; }
+.field-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary); letter-spacing: 1.5px; margin-bottom: 12px; display: block; opacity: 0.9; }
 .field-value { font-size: 1.5rem; font-weight: 800; color: white; line-height: 1.2; }
 
 .markdown-body { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.8; }
