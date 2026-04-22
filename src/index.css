@@ -112,6 +112,25 @@ body {
   color: white;
 }
 
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 8px;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+
+.mobile-menu-btn:hover { opacity: 0.7; }
+
+@media (max-width: 900px) {
+  .mobile-menu-btn { display: flex; }
+}
+
 .main-layout {
   display: flex;
   flex: 1;

@@ -439,6 +439,9 @@ function App() {
     <div className="app-container">
       <header className="app-header">
         <div className="header-left">
+          <button className="mobile-menu-btn" onClick={() => setShowMobileSidebar(true)}>
+            <Menu size={20} />
+          </button>
           <div className="header-brand">
              <div className="header-icon-box" style={{ background: 'var(--accent-primary)', borderRadius: '10px' }}>
                 <Sparkles color="black" size={16} />
