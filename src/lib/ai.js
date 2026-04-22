@@ -22,7 +22,7 @@ ${mode === 'detailed' ? `
 
 # Style Guidelines
 - **INTELLIGENT BOLDING**: You MUST identify and bold (**key points**) every technical specification, unique parameter, product material, and high-value selling point within the sentences (e.g., **Full-frame 8K sensor**, **17 stops of dynamic range**, **Carbon Fibre construction**, **Native ISO 800**).
-- **SPACING**: Ensure there is a clear empty line between different conceptual paragraphs in the overview and sections.
+- **SPACING**: You MUST use double newlines (\\n\\n) between paragraphs in the "overview" and "content" fields to ensure clear visual separation. Never return a single wall of text.
 - Avoid fluff; focus on professional utility and specific performance metrics.
 - Tone should be authoritative, premium, and sophisticated.
 
