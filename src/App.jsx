@@ -266,23 +266,25 @@ function App() {
   };
 
   return (
-    <div className="app-layout extension-mode">
-      <div className="mobile-header">
-        <button onClick={() => setShowMobileSidebar(true)} className="sidebar-toggle">
-          <Menu size={24} />
-        </button>
-        <h1 className="header-title">
-          Shopify <span className="text-gradient">MiniMax AI</span>
-        </h1>
+    <div className="app-container">
+      <header className="app-header">
+        <div className="header-left">
+          <button onClick={() => setShowMobileSidebar(true)} className="sidebar-toggle">
+            <Menu size={24} />
+          </button>
+          <h1 className="header-title">
+            Shopify <span className="text-gradient">MiniMax AI</span>
+          </h1>
+        </div>
         <div className="engine-status">
           <span className="status-dot" style={{ background: isGenerating ? 'var(--accent-color)' : 'var(--success-color, #10b981)' }} />
           {engineStatus}
         </div>
-      </div>
+      </header>
 
-      {showMobileSidebar && <div className="mobile-overlay" onClick={() => setShowMobileSidebar(false)} />}
+      <div className={`mobile-overlay ${showMobileSidebar ? 'visible' : ''}`} onClick={() => setShowMobileSidebar(false)} />
 
-      <div className="main-panel-group">
+      <div className="main-layout">
         <div className={`sidebar-panel ${showMobileSidebar ? 'mobile-open' : ''}`}>
           <aside className="sidebar">
             <div className="brand-section">
@@ -335,7 +337,7 @@ function App() {
         </div>
 
         <div className="content-panel">
-          <main className="main-content">
+          <main className="main-container">
             <div className="input-section">
               <div className="glass-panel input-card">
                 <label><Camera size={18} color="var(--accent-color)" /> Product Name</label>
