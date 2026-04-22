@@ -630,9 +630,18 @@ function App() {
                     </button>
                   </div>
 
-                  <button onClick={handleGenerate} disabled={isGenerating} className="generate-btn">
-                    {isGenerating ? t('synthesizing') : t('generate')}
-                    {!isGenerating && <Sparkles size={18} />}
+                  <button onClick={handleGenerate} disabled={isGenerating} className={`generate-btn ${isGenerating ? 'loading' : ''}`}>
+                    {isGenerating ? (
+                      <>
+                        <RefreshCw size={18} className="spin-icon" />
+                        {t('synthesizing')}
+                      </>
+                    ) : (
+                      <>
+                        {t('generate')}
+                        <Sparkles size={18} />
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

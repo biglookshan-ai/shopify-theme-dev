@@ -304,6 +304,18 @@ textarea { min-height: 120px; line-height: 1.6; }
 
 .generate-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(255, 179, 0, 0.4); }
 
+.generate-btn.loading {
+  opacity: 0.8;
+  cursor: wait;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 8px 24px rgba(255, 179, 0, 0.3); }
+  50% { transform: scale(0.98); box-shadow: 0 4px 12px rgba(255, 179, 0, 0.2); }
+  100% { transform: scale(1); box-shadow: 0 8px 24px rgba(255, 179, 0, 0.3); }
+}
+
 /* Result Header Controls */
 .result-actions { display: flex; gap: 10px; }
 .result-btn {
