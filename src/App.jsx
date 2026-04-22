@@ -693,6 +693,7 @@ function App() {
                         transition: 'all 0.3s'
                       }}
                     >
+                      {copyFeedback ? t('copied') : t('copyHtml')}
                     </button>
                     <button 
                       onClick={saveToHistory} 
