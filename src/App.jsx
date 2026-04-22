@@ -387,6 +387,37 @@ function App() {
                       <p>Drag & drop or tap to attach Files/Images (max 20MB)</p>
                     </div>
                   </div>
+
+                  {files.length > 0 && (
+                    <div className="file-preview-list" style={{ marginTop: '16px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {files.map((file, idx) => (
+                        <div key={idx} className="file-chip" style={{ 
+                          background: 'rgba(255,255,255,0.05)', 
+                          padding: '6px 12px', 
+                          borderRadius: '8px', 
+                          fontSize: '0.75rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          border: '1px solid var(--border-color)'
+                        }}>
+                          <FileText size={14} />
+                          <span style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {file.name}
+                          </span>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFiles(prev => prev.filter((_, i) => i !== idx));
+                            }}
+                            style={{ background: 'none', border: 'none', color: 'var(--error)', cursor: 'pointer', padding: '2px', display: 'flex' }}
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="glass-panel input-card">
