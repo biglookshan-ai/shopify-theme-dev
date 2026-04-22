@@ -48,7 +48,7 @@ const TRANSLATIONS = {
     draftWorkspace: "草稿工作区",
     workspaceSubtitle: "填入详细信息，AI 将为您合成并格式化为专业的英式英语描述。",
     productName: "产品名称 *",
-    productNameHint: "用于历史列表的简短标识。",
+    productNameHint: "用于标识产品的名称信息",
     links: "参考链接",
     linksHint: "在此处粘贴产品链接、新闻报道、官网或视频链接。",
     materials: "产品资料",
