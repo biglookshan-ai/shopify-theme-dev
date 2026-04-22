@@ -20,6 +20,7 @@ function App() {
   const [references, setReferences] = useState('');
   const [customInstructions, setCustomInstructions] = useState('');
   const [files, setFiles] = useState([]);
+  const fileInputRef = React.useRef(null);
 
   // Execution States
   const [isGenerating, setIsGenerating] = useState(false);
@@ -127,7 +128,18 @@ function App() {
   }, []);
 
   const handleFileUpload = (e) => {
-    const selectedFiles = Array.from(e.target.files);
+    const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
+    if (selectedFiles.length === 0) return;
+    processFiles(selectedFiles);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    processFiles(droppedFiles);
+  };
+
+  const processFiles = (selectedFiles) => {
     const totalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0);
     if (totalSize > 20 * 1024 * 1024) {
       setError("Total file size exceeds 20MB limit.");
@@ -356,9 +368,24 @@ function App() {
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste your raw specs, Chinese drafts, or feature lists here.</p>
                   <textarea value={materials} onChange={(e) => setMaterials(e.target.value)} placeholder="e.g. Full-frame cinema camera, 8K 60fps RAW internal recording, 17 stops dynamic range..." />
                   
-                  <div className="file-upload">
-                    <input type="file" multiple onChange={handleFileUpload} accept="image/*,.pdf,.doc,.docx,.txt" />
-                    <p>Drag & drop or tap to attach Files/Images (max 20MB)</p>
+                  <div 
+                    className="file-upload-zone"
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleDrop}
+                  >
+                    <input 
+                      type="file" 
+                      ref={fileInputRef}
+                      multiple 
+                      style={{ display: 'none' }}
+                      onChange={handleFileUpload} 
+                      accept="image/*,.pdf,.doc,.docx,.txt" 
+                    />
+                    <div className="upload-content">
+                      <Sparkles size={24} style={{ marginBottom: '10px', opacity: 0.5 }} />
+                      <p>Drag & drop or tap to attach Files/Images (max 20MB)</p>
+                    </div>
                   </div>
                 </div>
 
