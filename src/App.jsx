@@ -54,7 +54,7 @@ const TRANSLATIONS = {
     materials: "产品资料",
     materialsHint: "复制或输入产品原始描述、技术规格、核心卖点等信息。",
     uploadHint: "拖拽或点击上传文件/图片 (最大 20MB)",
-    customPrompt: "Custom Prompt",
+    customPrompt: "自定义提示词",
     customPromptHint: "特殊要求？（例如：“不含重量规格”或“强调低光表现”）",
     concise: "标准模式",
     detailed: "详细模式",

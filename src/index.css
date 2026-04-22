@@ -63,7 +63,16 @@ body {
 }
 
 .header-left { display: flex; align-items: center; gap: 12px; }
-.header-title { font-size: 1rem; font-weight: 700; }
+.header-brand { display: flex; align-items: center; gap: 12px; }
+.header-icon-box { 
+  width: 32px; 
+  height: 32px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  flex-shrink: 0;
+}
+.header-title { font-size: 1rem; font-weight: 700; margin: 0; }
 .text-gradient { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
 .engine-status {
@@ -122,10 +131,7 @@ body {
   flex-direction: column;
 }
 
-.brand-section { margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
-.brand-icon { background: var(--accent-gradient); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-.brand-text h1 { font-size: 0.95rem; font-weight: 800; line-height: 1.1; }
-.brand-text span { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+/* Legacy Brand Section Removed */
 
 .new-btn {
   width: 100%;
@@ -201,8 +207,7 @@ label {
   font-size: 0.95rem; 
   margin-bottom: 16px; 
   color: var(--accent-primary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 input, textarea {
