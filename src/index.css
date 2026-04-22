@@ -287,8 +287,8 @@ textarea { min-height: 120px; line-height: 1.6; }
 .field-value { font-size: 1.5rem; font-weight: 800; color: white; line-height: 1.2; }
 
 .markdown-body { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.8; }
-.markdown-body strong { color: white; font-weight: 700; background: rgba(255,179,0,0.1); padding: 0 4px; border-radius: 4px; }
-.markdown-body p { margin-bottom: 20px; }
+.markdown-body strong { color: white; font-weight: 700; }
+.markdown-body p { margin-bottom: 16px; }
 .markdown-body li { margin-bottom: 12px; }
 
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; opacity: 0.2; text-align: center; color: var(--text-muted); }
