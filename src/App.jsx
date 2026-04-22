@@ -51,19 +51,22 @@ function App() {
       ? result.sections.map(s => `
           <p><strong>${s.heading}</strong></p>
           <p>${s.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>
-          <br/>
+          <p>&nbsp;</p>
         `).join('')
       : '';
 
     const descriptionHtml = `
       <div class="product-description-ai">
         <p><strong>Overview</strong></p>
-        ${result.overview.split('\n').filter(p => p.trim()).map(p => `<p>${p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`).join('')}
-        <br/>
+        ${result.overview.split('\n').filter(p => p.trim()).map(p => `
+          <p>${p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>
+          <p>&nbsp;</p>
+        `).join('')}
         
         ${sectionsHtml}
         
-        <br/><br/>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
         <p><strong>Features:</strong></p>
         <ul>
           ${result.features.map(f => `
@@ -73,7 +76,7 @@ function App() {
           `).join('')}
         </ul>
         
-        <br/>
+        <p>&nbsp;</p>
         <p style="color: #888; font-size: 0.8em;"><em>*This text is summarised by AI</em></p>
       </div>
     `;
