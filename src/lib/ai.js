@@ -1,95 +1,76 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const SYSTEM_PROMPT = `
+const getSystemPrompt = (mode) => `
 # Role and Persona
-You are a Senior Film and Video Equipment Product Description Writing Expert and Checker. You are highly proficient in professional cinematography equipment terminology, film industry concepts, and technologies.
+You are a Senior Film and Video Equipment Product Description Expert for CineGearPro, powered by MiniMax AI.
 You must STRICTLY use pure British English spelling (e.g., "optimised", "colour", "aluminium").
 
-# Workflow Rules
-Input includes product information and optional files.
-You must extract data and output STRICTLY in JSON format.
-DO NOT include any markdown blocks or conversational filler. Return ONLY the JSON object.
+# Objective
+Generate a professional, high-end product description for cinematography equipment. 
+Mode: ${mode === 'detailed' ? 'DETAILED (Comprehensive & Analytical)' : 'CONCISE (Punchy & Direct)'}
 
-# JSON Output Format
+# Structure Rules
+${mode === 'detailed' ? `
+- Title: Professional product name.
+- Overview: An engaging 1-2 sentence hook.
+- Sections: 3-4 detailed paragraphs focusing on different functional areas (e.g., Imaging Performance, Ergonomics & Build, Connectivity). 
+- Features: 8-12 comprehensive bullet points with technical depth.
+` : `
+- Title: Professional product name.
+- Overview: A concise but powerful single-paragraph summary (30-60 words).
+- Sections: Leave as an empty array.
+- Features: 5-8 punchy bullet points highlighting key advantages.
+`}
+
+# Style Guidelines
+- Use MARKDOWN BOLD (**key spec**) for EVERY technical specification (e.g., **Full-frame**, **14 stops dynamic range**, **8K/60p**, **Carbon Fibre**).
+- Avoid fluff; focus on performance and professional utility.
+- Tone should be authoritative, premium, and sophisticated.
+
+# Output Format
+Return ONLY a JSON object:
 {
   "title": "string",
   "overview": "string",
+  "sections": [
+    { "heading": "Heading Name", "content": "Detailed content..." }
+  ],
   "features": ["string", "string", ...]
 }
 `;
 
 // Configuration
-const GEMINI_KEYS = (import.meta.env.VITE_GEMINI_API_KEYS || "").split(",").filter(k => k.trim());
-const SILICONFLOW_KEY = import.meta.env.VITE_SILICONFLOW_API_KEY || "";
-const SILICONFLOW_MODEL = import.meta.env.VITE_SILICONFLOW_MODEL || "qwen/qwen2-vl-72b-instruct";
+const MINIMAX_KEY = import.meta.env.VITE_MINIMAX_API_KEY || "";
+const MINIMAX_MODEL = import.meta.env.VITE_MINIMAX_MODEL || "abab6.5-chat";
+const MINIMAX_BASE_URL = "https://api.minimaxi.com/v1/chat/completions";
 
-const EngineState = {
-  gemini: {
-    isAvailable: true,
-    lastTryTime: 0,
-    cooldownMs: 40 * 1000,
-    keys: GEMINI_KEYS.map(key => ({ key })),
-    currentIndex: 0
-  }
-};
-
-export async function generateDescription(materials, references, files = [], onEngineStatus) {
-  const canTryGemini = EngineState.gemini.isAvailable || (Date.now() - EngineState.gemini.lastTryTime > EngineState.gemini.cooldownMs);
-
-  if (canTryGemini && GEMINI_KEYS.length > 0) {
-    try {
-      if (onEngineStatus) onEngineStatus("Gemini (Primary)");
-      return await generateWithGemini(materials, references, files);
-    } catch (error) {
-      console.warn("Gemini Engine Error:", error);
-      EngineState.gemini.isAvailable = false;
-      EngineState.gemini.lastTryTime = Date.now();
-    }
+export async function generateDescription(materials, references, files = [], onEngineStatus, mode = 'concise') {
+  if (!MINIMAX_KEY) {
+    throw new Error("MiniMax API Key is missing. Please check your .env file.");
   }
 
-  if (SILICONFLOW_KEY) {
-    try {
-      if (onEngineStatus) onEngineStatus("SiliconFlow (Fallback Active)");
-      return await generateWithSiliconFlow(materials, references, files);
-    } catch (error) {
-      console.error("SiliconFlow Error:", error);
-      throw new Error(`AI Generation failed. SF Error: ${error.message}`);
-    }
-  }
+  if (onEngineStatus) onEngineStatus(`MiniMax Optimized (${mode})`);
 
-  throw new Error("No available AI engines configured.");
+  try {
+    return await generateWithMiniMax(materials, references, files, mode);
+  } catch (error) {
+    console.error("MiniMax Engine Error:", error);
+    throw new Error(`AI Generation failed: ${error.message}`);
+  }
 }
 
-async function generateWithGemini(materials, references, files) {
-  const currentKey = GEMINI_KEYS[EngineState.gemini.currentIndex];
-  EngineState.gemini.currentIndex = (EngineState.gemini.currentIndex + 1) % GEMINI_KEYS.length;
-
-  const genAI = new GoogleGenerativeAI(currentKey);
-  // Using gemini-1.5-flash as the identifier
-  const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    systemInstruction: SYSTEM_PROMPT
-  });
-
-  const promptParts = [
-    `Context: ${materials || "Identify the product."}\nRefs: ${references || "None."}\nReturn pure JSON.`
-  ];
-
-  for (const file of files) {
-    promptParts.push({ inlineData: { data: file.base64, mimeType: file.mimeType } });
-  }
-
-  const result = await model.generateContent(promptParts);
-  const response = await result.response;
-  const text = response.text().trim().replace(/```json|```/g, ""); // Manual clean up just in case
-  return JSON.parse(text);
-}
-
-async function generateWithSiliconFlow(materials, references, files) {
+async function generateWithMiniMax(materials, references, files, mode) {
+  const prompt = getSystemPrompt(mode);
+  
+  // Construct the message content
+  // Note: Handling vision as text description for now if files are present, 
+  // until confirmed that the specific abab model supports OpenAI vision payloads.
+  let textContent = `Materials: ${materials}\nRefs: ${references}\nGenerate description in ${mode.toUpperCase()} mode. Output only pure JSON.`;
+  
   const userContent = [
-    { type: "text", text: `Materials: ${materials}\nRefs: ${references}\nProvide JSON description according to system prompt.` }
+    { type: "text", text: textContent }
   ];
 
+  // If there are files/images, we attempt to pass them in OpenAI format.
+  // MiniMax International (MiniMaxi) usually supports this in their multimodal models.
   for (const file of files) {
     userContent.push({
       type: "image_url",
@@ -97,28 +78,49 @@ async function generateWithSiliconFlow(materials, references, files) {
     });
   }
 
-  const response = await fetch("https://api.siliconflow.cn/v1/chat/completions", {
+  const response = await fetch(MINIMAX_BASE_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${SILICONFLOW_KEY}`
+      "Authorization": `Bearer ${MINIMAX_KEY}`
     },
     body: JSON.stringify({
-      model: SILICONFLOW_MODEL,
+      model: MINIMAX_MODEL,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: prompt },
         { role: "user", content: userContent }
       ],
-      temperature: 0.1,
-      max_tokens: 2048
+      temperature: 0.1, // High precision for JSON
+      max_tokens: 3000
     })
   });
 
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error?.message || "SF Request failed");
+  
+  if (!response.ok) {
+    // Handle MiniMax specific error codes if available
+    const errorMsg = data.base_resp?.status_msg || data.error?.message || "MiniMax Request failed";
+    throw new Error(errorMsg);
+  }
 
   let text = data.choices[0].message.content.trim();
-  // Strip markdown if AI insists on adding it
-  text = text.replace(/```json|```/g, "");
-  return JSON.parse(text);
+  
+  // Robust cleaning of markdown code blocks
+  text = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+  
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Failed to parse JSON from MiniMax:", text);
+    // Attempt a secondary clean if there's trailing garbage
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch (e2) {
+        throw new Error("AI output was not valid JSON format.");
+      }
+    }
+    throw new Error("AI output was not valid JSON. Please try again.");
+  }
 }
