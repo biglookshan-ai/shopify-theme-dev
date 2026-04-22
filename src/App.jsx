@@ -49,35 +49,32 @@ function App() {
     
     const sectionsHtml = result.sections && result.sections.length > 0 
       ? result.sections.map(s => `
-          <div class="product-section" style="margin-bottom: 20px;">
-            <strong style="display: block; margin-bottom: 8px;">${s.heading}</strong>
-            <p style="margin-bottom: 12px; line-height: 1.6;">${s.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>
-          </div>
+          <p><strong>${s.heading}</strong></p>
+          <p>${s.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>
+          <br/>
         `).join('')
       : '';
 
     const descriptionHtml = `
-      <div class="product-description-ai" style="font-family: inherit; color: #333;">
-        <div class="overview" style="margin-bottom: 20px; line-height: 1.6;">
-          <strong style="font-size: 1em; color: #FFB300; display: block; margin-bottom: 8px;">Overview</strong>
-          ${result.overview.split('\n').filter(p => p.trim()).map(p => `<p style="margin-bottom: 12px;">${p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`).join('')}
-        </div>
+      <div class="product-description-ai">
+        <p><strong><span style="color: #FFB300;">Overview</span></strong></p>
+        ${result.overview.split('\n').filter(p => p.trim()).map(p => `<p>${p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`).join('')}
+        <br/>
         
         ${sectionsHtml}
         
-        <br/>
-        <strong style="font-size: 1em; color: #FFB300; display: block; margin-bottom: 8px;">Features:</strong>
-        <ul style="padding-left: 20px; list-style-type: disc;">
+        <br/><br/>
+        <p><strong><span style="color: #FFB300;">Features:</span></strong></p>
+        <ul>
           ${result.features.map(f => `
-            <li style="margin-bottom: 12px; line-height: 1.5;">
+            <li style="margin-bottom: 8px;">
               ${f.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
             </li>
           `).join('')}
         </ul>
         
-        <p style="margin-top: 24px; font-size: 0.8em; color: #888; font-style: italic;">
-          *This text is summarised by AI
-        </p>
+        <br/>
+        <p style="color: #888; font-size: 0.8em;"><em>*This text is summarised by AI</em></p>
       </div>
     `;
 
