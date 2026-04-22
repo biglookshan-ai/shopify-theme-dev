@@ -720,7 +720,15 @@ function App() {
                   )}
                   <div className="result-field">
                     <span className="field-label">{lang === 'zh' ? '标题' : 'Title'}</span>
-                    <h2 className="field-value">{displayResult.title}</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <h2 className="field-value" style={{ margin: 0 }}>{displayResult.title}</h2>
+                      {displayResult.title_optimized && (
+                        <div className="optimized-badge">
+                          <Sparkles size={12} />
+                          {lang === 'zh' ? '已优化' : 'Optimized'}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="result-field">

@@ -21,14 +21,24 @@ ${styleReferences ? `Study these examples of your best writing style:\n${styleRe
 Generate a professional product description.
 Mode: ${mode === 'detailed' ? 'DETAILED (Comprehensive & Analytical)' : 'CONCISE (Punchy & Direct)'}
 
+# Title Optimization Rules (MANDATORY)
+You MUST optimize the "title" field according to this hierarchy:
+[Brand Name] + ([SKU] if exists) + [Product/Series Name] + ([Specifics] e.g., 12mm T2.5) + [Category/Item Name] + [Other needed info].
+- Example Input: "dzofilm 35-80mm"
+- Example Output: "DZOFILM Catta 35-80mm T2.9 Full-Frame Cinema Zoom Lens"
+
+# Flagging Optimization
+- If you significantly restructure or improve the "Product Name" provided by the user to follow the hierarchy above, you MUST set "title_optimized" to true.
+- If the user's input already follows the professional hierarchy perfectly, set "title_optimized" to false.
+
 # Structure Rules
 ${mode === 'detailed' ? `
-- Title: Professional product name.
+- Title: Optimized product name.
 - Overview: Engaging hook paragraphs.
 - Sections: Detailed paragraphs (Imaging, Build, etc.). 
 - Features: 8-12 comprehensive bullet points.
 ` : `
-- Title: Product name.
+- Title: Optimized product name.
 - Overview: 1-2 powerful paragraphs ONLY. No subheadings or "Overview" label.
 - Sections: Leave as an empty array [].
 - Features: 5-8 punchy bullet points.
@@ -52,6 +62,7 @@ You MUST identify and bold (**key technical parameters**), (**high-value selling
 # Output Format (STRICT JSON)
 {
   "title": "string",
+  "title_optimized": boolean,
   "overview": "string",
   "sections": [{"heading": "string", "content": "string"}],
   "features": ["string"]
@@ -171,12 +182,14 @@ Translate the provided technical product description from English into Professio
 - Use accurate technical terms used in the film industry.
 - Maintain the EXACT SAME JSON structure.
 - TRANSLATE the content of "title", "overview", and the "heading" & "content" inside "sections", and each string in "features".
+- PRESERVE the "title_optimized" boolean value as is.
 - Maintain all Markdown bolding (**text**) precisely as they appear in the original.
 - Do NOT add any conversational text. ONLY output the JSON.
 
 # Output Format (JSON)
 {
   "title": "...",
+  "title_optimized": boolean,
   "overview": "...",
   "sections": [{"heading": "...", "content": "..."}],
   "features": ["..."]
