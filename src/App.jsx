@@ -58,7 +58,6 @@ function App() {
 
     return `
       <div class="product-description-ai">
-        <p><strong>Overview</strong></p>
         ${result.overview.split('\n').filter(p => p.trim()).map(p => `
           <p>${p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>
           <p>&nbsp;</p>
@@ -66,7 +65,6 @@ function App() {
         
         ${sectionsHtml}
         
-        <p>&nbsp;</p>
         <p>&nbsp;</p>
         <p><strong>Features:</strong></p>
         <ul>
@@ -78,7 +76,7 @@ function App() {
         </ul>
         
         <p>&nbsp;</p>
-        <p style="color: #888; font-size: 0.8em;"><em>*This text is summarised by AI</em></p>
+        <p><span style="color: rgb(230, 230, 230);">*This text is summarised by AI</span></p>
       </div>
     `;
   };
