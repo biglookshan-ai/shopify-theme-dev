@@ -364,8 +364,8 @@ function App() {
                 </div>
 
                 <div className="glass-panel input-card">
-                    <label><RefreshCw size={16} /> Reference Links</label>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste URLs (e.g. YouTube, Bilibili, Official Specs).</p>
+                    <label><RefreshCw size={16} /> Links</label>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste product links, news coverage, official URLs, or video links here.</p>
                     <textarea 
                         style={{ minHeight: '60px' }}
                         value={references} 
@@ -376,7 +376,7 @@ function App() {
 
                 <div className="glass-panel input-card">
                   <label><Video size={16} /> Product Materials</label>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Paste your raw specs, Chinese drafts, or feature lists here.</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Copy or enter raw product descriptions, technical specifications, key selling points, etc.</p>
                   <textarea value={materials} onChange={(e) => setMaterials(e.target.value)} placeholder="e.g. Full-frame cinema camera, 8K 60fps RAW internal recording, 17 stops dynamic range..." />
                   
                   <div 
@@ -431,8 +431,8 @@ function App() {
                   )}
                 </div>
 
-                <div className="glass-panel input-card" style={{ borderColor: 'var(--accent-primary)', opacity: 0.9 }}>
-                    <label style={{ color: 'var(--accent-primary)' }}><Wand2 size={16} /> Custom Instructions</label>
+                <div className="glass-panel input-card">
+                    <label><Wand2 size={16} /> Custom Prompt</label>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '12px' }}>Special requests? (e.g., "Exclude weight specs" or "Focus on low-light performance")</p>
                     <textarea 
                         style={{ minHeight: '60px' }}
